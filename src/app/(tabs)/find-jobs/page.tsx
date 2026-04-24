@@ -6,10 +6,20 @@ import { useAppState } from "@/lib/state/AppStateProvider";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { Badge } from "@/components/ui/Badge";
 import { relativeDayLabel } from "@/lib/demo-data";
+import type { Opportunity } from "@/lib/types";
+
+type SortKey = "distance" | "soonest" | "value";
+
+const SORT_LABELS: { key: SortKey; label: string }[] = [
+  { key: "distance", label: "Distance" },
+  { key: "soonest", label: "Soonest" },
+  { key: "value", label: "Value" },
+];
 
 export default function FindJobsPage() {
   const { state } = useAppState();
   const [tab, setTab] = useState<"available" | "history">("available");
+  const [sort, setSort] = useState<SortKey>("distance");
 
   const history = useMemo(() => {
     const past = state.pastOpportunities;
@@ -19,11 +29,38 @@ export default function FindJobsPage() {
     return [...pending, ...past];
   }, [state.opportunities, state.pastOpportunities]);
 
+  const available = useMemo(
+    () => state.opportunities.filter((o) => !o.outcome),
+    [state.opportunities],
+  );
+
+  const sections = useMemo(() => {
+    const sorter = (a: Opportunity, b: Opportunity) => {
+      if (sort === "distance") return a.distanceKm - b.distanceKm;
+      if (sort === "soonest") return a.dateOffsetDays - b.dateOffsetDays;
+      return b.value - a.value;
+    };
+    const urgent = available
+      .filter((o) => o.urgent || o.dateOffsetDays === 0)
+      .sort(sorter);
+    const thisWeek = available
+      .filter((o) => !o.urgent && o.dateOffsetDays >= 1 && o.dateOffsetDays <= 7)
+      .sort(sorter);
+    const later = available
+      .filter((o) => !o.urgent && o.dateOffsetDays >= 8)
+      .sort(sorter);
+    return [
+      { key: "urgent", title: "Urgent — today", items: urgent },
+      { key: "thisWeek", title: "This week", items: thisWeek },
+      { key: "later", title: "Next week+", items: later },
+    ];
+  }, [available, sort]);
+
   return (
     <main className="pb-6">
       <PageHeader
         title="Find jobs"
-        subtitle={`${state.opportunities.filter((o) => !o.outcome).length} opportunities matched to you`}
+        subtitle={`${available.length} jobs in your area · matched to your trade & compliance`}
       />
 
       <div className="sticky top-[60px] z-10 bg-background/95 px-4 pt-2 backdrop-blur">
@@ -58,15 +95,56 @@ export default function FindJobsPage() {
       </div>
 
       {tab === "available" ? (
-        <div className="space-y-3 px-4 pt-4">
-          {state.opportunities
-            .filter((o) => !o.outcome)
-            .map((o) => (
-              <OpportunityCard key={o.id} id={o.id} data={o} />
-            ))}
-          {state.opportunities.filter((o) => !o.outcome).length === 0 ? (
+        <div className="px-4 pt-3">
+          <div className="flex items-center gap-2 pb-3">
+            <span className="text-[11px] font-medium uppercase tracking-wider text-muted">
+              Sort
+            </span>
+            <div className="flex gap-1.5">
+              {SORT_LABELS.map((s) => (
+                <button
+                  key={s.key}
+                  type="button"
+                  onClick={() => setSort(s.key)}
+                  className={
+                    "rounded-full px-3 py-1 text-[12px] font-medium " +
+                    (sort === s.key
+                      ? "bg-accent text-white"
+                      : "bg-surface-2 text-muted")
+                  }
+                  style={{ minHeight: 28 }}
+                >
+                  {s.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {available.length === 0 ? (
             <EmptyState />
-          ) : null}
+          ) : (
+            <div className="space-y-5">
+              {sections.map((section) =>
+                section.items.length === 0 ? null : (
+                  <div key={section.key}>
+                    <div className="mb-2 flex items-center justify-between">
+                      <h2 className="text-xs font-semibold uppercase tracking-wider text-muted">
+                        {section.title}
+                      </h2>
+                      <span className="text-[11px] text-muted">
+                        {section.items.length}
+                      </span>
+                    </div>
+                    <div className="space-y-3">
+                      {section.items.map((o) => (
+                        <OpportunityCard key={o.id} id={o.id} data={o} />
+                      ))}
+                    </div>
+                  </div>
+                ),
+              )}
+            </div>
+          )}
         </div>
       ) : (
         <div className="space-y-2 px-4 pt-4">

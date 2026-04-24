@@ -8,7 +8,7 @@ import {
   useMemo,
   useState,
 } from "react";
-import { getJobs, getOpportunities, getPastOpportunity, JAKE } from "@/lib/demo-data";
+import { getJobs, getOpportunities, getPastOpportunities, JAKE } from "@/lib/demo-data";
 import type {
   AttendanceConfirmation,
   Job,
@@ -52,7 +52,7 @@ function defaultState(): PersistedState {
     trade: JAKE,
     jobs: getJobs(),
     opportunities: getOpportunities(),
-    pastOpportunities: [getPastOpportunity()],
+    pastOpportunities: getPastOpportunities(),
     selectedJobId: null,
     checkedInJobId: null,
     sacDoneJobIds: [],
@@ -176,7 +176,7 @@ function reducer(state: PersistedState, action: Action): PersistedState {
   }
 }
 
-const KEY = "chekku:state:v1";
+const KEY = "chekku:state:v2";
 
 interface AppStateCtx {
   state: PersistedState;

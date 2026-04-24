@@ -8,17 +8,34 @@ import { getComplianceDocs, relativeDayLabel } from "@/lib/demo-data";
 import type { AttendanceConfirmation, Job } from "@/lib/types";
 import { Badge } from "@/components/ui/Badge";
 
+function startTimeToMinutes(s: string): number {
+  const m = s.match(/^(\d{1,2}):(\d{2})\s*(AM|PM)$/i);
+  if (!m) return 0;
+  let h = parseInt(m[1], 10);
+  const min = parseInt(m[2], 10);
+  const period = m[3].toUpperCase();
+  if (period === "PM" && h !== 12) h += 12;
+  if (period === "AM" && h === 12) h = 0;
+  return h * 60 + min;
+}
+
 export default function HomePage() {
   const { state, dispatch } = useAppState();
   const router = useRouter();
 
   const jobs = state.jobs;
   const todayJobs = useMemo(
-    () => jobs.filter((j) => j.dateOffsetDays === 0),
+    () =>
+      jobs
+        .filter((j) => j.dateOffsetDays === 0)
+        .sort((a, b) => startTimeToMinutes(a.startTime) - startTimeToMinutes(b.startTime)),
     [jobs],
   );
   const tomorrowJobs = useMemo(
-    () => jobs.filter((j) => j.dateOffsetDays === 1),
+    () =>
+      jobs
+        .filter((j) => j.dateOffsetDays === 1)
+        .sort((a, b) => startTimeToMinutes(a.startTime) - startTimeToMinutes(b.startTime)),
     [jobs],
   );
 
@@ -242,6 +259,9 @@ function DuringView({
   const active = jobs.find((j) => j.status === "InProgress");
   const remaining = jobs.filter((j) => j.status === "Confirmed");
   const earned = done.reduce((s, j) => s + j.value, 0);
+  const potentialTotal = jobs.reduce((s, j) => s + j.value, 0);
+  const totalCount = jobs.length;
+  const doneCount = done.length;
 
   return (
     <>
@@ -253,10 +273,25 @@ function DuringView({
           <p className="mt-1 text-4xl font-bold tracking-tight text-accent">
             ${earned.toFixed(2)}
           </p>
+          <p className="mt-1 text-xs text-muted">
+            of ${potentialTotal.toFixed(2)} potential
+          </p>
+          <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-surface-2">
+            <div
+              className="h-full rounded-full bg-accent transition-all"
+              style={{
+                width: `${
+                  potentialTotal > 0 ? Math.round((earned / potentialTotal) * 100) : 0
+                }%`,
+              }}
+            />
+          </div>
           <div className="mt-3 flex items-center gap-4 text-xs text-muted">
             <span>
-              <span className="font-semibold text-foreground">{done.length}</span>{" "}
-              done
+              <span className="font-semibold text-foreground">
+                {doneCount} of {totalCount}
+              </span>{" "}
+              {totalCount === 1 ? "job" : "jobs"} done
             </span>
             <span>
               <span className="font-semibold text-foreground">
