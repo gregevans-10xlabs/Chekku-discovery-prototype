@@ -153,6 +153,100 @@ export function getComplianceDocs(): ComplianceDocument[] {
   ];
 }
 
+// ---------- Scope templates ----------
+// Mirrors the scope text format used in Circl's current Trade App.
+// Harvey Norman jobs are SKU-based (short, code-prefixed lines).
+// Starlink jobs are a structured, verbose breakdown by install phase.
+
+const HN_SCOPE_FULL = `Installation Details:
+
+CONCP - Concealment Plaster/Wood
+TVWMLL - Wall mount 75" to 86" (excluding concealment)
+PREM SBS - Premium soundbar setup (eg SONOS)`;
+
+const HN_SCOPE_TV_CONCEAL = `Installation Details:
+
+CONCP - Concealment Plaster/Wood
+TVWMLL - Wall mount 75" to 86" (excluding concealment)`;
+
+const HN_SCOPE_TV_SOUNDBAR = `Installation Details:
+
+TVWMLL - Wall mount 75" to 86" (excluding concealment)
+PREM SBS - Premium soundbar setup (eg SONOS)`;
+
+const HN_SCOPE_XL = `Installation Details:
+
+TVWMXL - Wall Mount - 90" to 100" (excluding concealment)
+CONCC - Concealment in conduit on Brick or where no cavity exists behind plaster/wood)`;
+
+const STARLINK_CANONICAL = `Installation Details:
+
+Roof Mounted Install - Single Story Residential Home
+
+Preliminaries
+
+Site Access/Induction/JSEA/Work Area Set-Up
+Install Starlink Dish
+
+Assess optimal location for Installation - Obtain Customer Approval
+Unboxing, Inspection, & Removal of packaging to client bin
+Mount the dish securely using the appropriate fixtures for property type
+Route Cables from dish to interior equipment
+Set Up the Starlink Router & Connect to existing power
+Leave work area clean and tidy
+Completion
+
+Configure & Activate device with client supplied credentials
+Test the internet connection
+Basic Customer Tutorial (max 5 mins)
+Completion artefacts
+Additional cable (45m) install only`;
+
+const STARLINK_WALL_MOUNT = `Installation Details:
+
+Wall Mounted Install - Single Story Residential Home
+
+Preliminaries
+
+Site Access/Induction/JSEA/Work Area Set-Up
+Install Starlink Dish
+
+Assess optimal location for Installation - Obtain Customer Approval
+Unboxing, Inspection, & Removal of packaging to client bin
+Mount the dish securely using the appropriate fixtures for property type
+Route Cables from dish to interior equipment
+Set Up the Starlink Router & Connect to existing power
+Leave work area clean and tidy
+Completion
+
+Configure & Activate device with client supplied credentials
+Test the internet connection
+Basic Customer Tutorial (max 5 mins)
+Completion artefacts`;
+
+const STARLINK_COMPLEX = `Installation Details:
+
+Roof Mounted Install - Double Story Residential Home
+
+Preliminaries
+
+Site Access/Induction/JSEA/Work Area Set-Up
+Install Starlink Dish
+
+Assess optimal location for Installation - Obtain Customer Approval
+Unboxing, Inspection, & Removal of packaging to client bin
+Mount the dish securely using the appropriate fixtures for property type
+Route Cables from dish to interior equipment
+Set Up the Starlink Router & Connect to existing power
+Leave work area clean and tidy
+Completion
+
+Configure & Activate device with client supplied credentials
+Test the internet connection
+Basic Customer Tutorial (max 5 mins)
+Completion artefacts
+Additional cable (45m) install only`;
+
 // ---------- Jobs ----------
 export function getJobs(): Job[] {
   return [
@@ -172,8 +266,7 @@ export function getJobs(): Job[] {
         rating: 4.8,
       },
       workOrder: "WO-47911",
-      scope:
-        "Standard Starlink residential installation — roof mount, cable run through existing conduit, router setup and testing, customer orientation.",
+      scope: STARLINK_CANONICAL,
       serviceCodes: ["CONCP", "PREM SBS"],
       dateOffsetDays: 0,
       timeOfDay: "Morning",
@@ -204,7 +297,7 @@ export function getJobs(): Job[] {
         rating: 4.7,
       },
       workOrder: "WO-47915",
-      scope: "65″ TV wall mount + cable management. Customer requesting tidy install behind plasterboard.",
+      scope: HN_SCOPE_TV_CONCEAL,
       serviceCodes: ["TVWMLL"],
       dateOffsetDays: 0,
       timeOfDay: "Morning",
@@ -239,7 +332,7 @@ export function getJobs(): Job[] {
         rating: 4.9,
       },
       workOrder: "WO-47918",
-      scope: "Standard Starlink residential installation — eave mount, internal cable through wardrobe.",
+      scope: STARLINK_WALL_MOUNT,
       serviceCodes: ["CONCP", "PREM SBS"],
       dateOffsetDays: 0,
       timeOfDay: "Afternoon",
@@ -270,7 +363,7 @@ export function getJobs(): Job[] {
         rating: 4.5,
       },
       workOrder: "WO-47922",
-      scope: "55″ TV wall mount + soundbar. No cable concealment requested.",
+      scope: HN_SCOPE_TV_SOUNDBAR,
       serviceCodes: ["TVWMLL"],
       dateOffsetDays: 0,
       timeOfDay: "Afternoon",
@@ -306,7 +399,7 @@ export function getJobs(): Job[] {
         rating: 4.6,
       },
       workOrder: "WO-47622",
-      scope: "65″ TV wall mount + soundbar setup. Confirm customer present.",
+      scope: HN_SCOPE_FULL,
       serviceCodes: ["TVWMLL"],
       dateOffsetDays: -1,
       timeOfDay: "Morning",
@@ -341,7 +434,7 @@ export function getJobs(): Job[] {
         rating: 4.8,
       },
       workOrder: "WO-47803",
-      scope: "Standard Starlink residential installation.",
+      scope: STARLINK_CANONICAL,
       serviceCodes: ["CONCP", "PREM SBS"],
       dateOffsetDays: -3,
       timeOfDay: "Morning",
@@ -372,7 +465,7 @@ export function getJobs(): Job[] {
         rating: 4.6,
       },
       workOrder: "WO-47655",
-      scope: "Standard Starlink residential installation — pole-mounted dish.",
+      scope: STARLINK_CANONICAL,
       serviceCodes: ["CONCP", "PREM SBS"],
       dateOffsetDays: -5,
       timeOfDay: "Afternoon",
@@ -403,7 +496,7 @@ export function getJobs(): Job[] {
         rating: 4.4,
       },
       workOrder: "WO-47511",
-      scope: "75″ TV wall mount + soundbar setup. Specialist bracket.",
+      scope: HN_SCOPE_XL,
       serviceCodes: ["TVWMLL"],
       dateOffsetDays: -7,
       timeOfDay: "Morning",
@@ -438,7 +531,7 @@ export function getJobs(): Job[] {
         rating: 4.9,
       },
       workOrder: "WO-47402",
-      scope: "55″ TV wall mount + cable tidy.",
+      scope: HN_SCOPE_TV_CONCEAL,
       serviceCodes: ["TVWMLL"],
       dateOffsetDays: -9,
       timeOfDay: "Afternoon",
@@ -473,7 +566,7 @@ export function getJobs(): Job[] {
         rating: 4.7,
       },
       workOrder: "WO-47301",
-      scope: "Standard Starlink residential installation — chimney mount.",
+      scope: STARLINK_CANONICAL,
       serviceCodes: ["CONCP", "PREM SBS"],
       dateOffsetDays: -10,
       timeOfDay: "Morning",
@@ -505,8 +598,7 @@ export function getJobs(): Job[] {
         rating: 4.9,
       },
       workOrder: "WO-48011",
-      scope:
-        "Standard Starlink residential installation — wall-mounted antenna, indoor router placement, speed test and customer walkthrough.",
+      scope: STARLINK_WALL_MOUNT,
       serviceCodes: ["CONCP", "PREM SBS"],
       dateOffsetDays: 1,
       timeOfDay: "Morning",
@@ -537,7 +629,7 @@ export function getJobs(): Job[] {
         rating: 4.7,
       },
       workOrder: "WO-48019",
-      scope: "55″ TV wall mount, soundbar, cable tidy.",
+      scope: HN_SCOPE_FULL,
       serviceCodes: ["TVWMLL"],
       dateOffsetDays: 1,
       timeOfDay: "Afternoon",
@@ -572,7 +664,7 @@ export function getJobs(): Job[] {
         rating: 4.8,
       },
       workOrder: "WO-48028",
-      scope: "Standard Starlink residential installation — terrace roof, internal cable through service shaft.",
+      scope: STARLINK_CANONICAL,
       serviceCodes: ["CONCP", "PREM SBS"],
       dateOffsetDays: 1,
       timeOfDay: "Afternoon",
@@ -604,7 +696,7 @@ export function getJobs(): Job[] {
         rating: 4.6,
       },
       workOrder: "WO-48101",
-      scope: "Standard Starlink residential installation.",
+      scope: STARLINK_CANONICAL,
       serviceCodes: ["CONCP", "PREM SBS"],
       dateOffsetDays: offsetToMonthDay(1, 5),
       timeOfDay: "Morning",
@@ -635,7 +727,7 @@ export function getJobs(): Job[] {
         rating: 4.7,
       },
       workOrder: "WO-48114",
-      scope: "65″ TV wall mount + soundbar.",
+      scope: HN_SCOPE_TV_SOUNDBAR,
       serviceCodes: ["TVWMLL"],
       dateOffsetDays: offsetToMonthDay(1, 15),
       timeOfDay: "Afternoon",
@@ -670,7 +762,7 @@ export function getJobs(): Job[] {
         rating: 4.9,
       },
       workOrder: "WO-48127",
-      scope: "Standard Starlink residential installation — heritage tile roof, careful penetration required.",
+      scope: STARLINK_COMPLEX,
       serviceCodes: ["CONCP", "PREM SBS"],
       dateOffsetDays: offsetToMonthDay(1, 25),
       timeOfDay: "Morning",
@@ -701,7 +793,7 @@ export function getJobs(): Job[] {
         rating: 4.7,
       },
       workOrder: "WO-48140",
-      scope: "Standard Starlink residential installation.",
+      scope: STARLINK_CANONICAL,
       serviceCodes: ["CONCP", "PREM SBS"],
       dateOffsetDays: offsetToMonthDay(2, 10),
       timeOfDay: "Afternoon",
@@ -732,7 +824,7 @@ export function getJobs(): Job[] {
         rating: 4.6,
       },
       workOrder: "WO-48155",
-      scope: "55″ TV wall mount + soundbar + cable concealment.",
+      scope: HN_SCOPE_FULL,
       serviceCodes: ["TVWMLL"],
       dateOffsetDays: offsetToMonthDay(2, 20),
       timeOfDay: "Morning",

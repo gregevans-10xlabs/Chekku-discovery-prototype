@@ -196,12 +196,9 @@ export default function JobDetail({
           <p className="text-[11px] font-semibold uppercase tracking-wider text-muted">
             Work Order {job.workOrder}
           </p>
-          {job.serviceCodes ? (
-            <p className="mt-1 text-xs text-muted">
-              Codes: {job.serviceCodes.join(", ")}
-            </p>
-          ) : null}
-          <p className="mt-2 text-[14px] leading-6">{job.scope}</p>
+          <p className="mt-2 whitespace-pre-line text-[14px] leading-6">
+            {job.scope}
+          </p>
         </div>
       </section>
 
