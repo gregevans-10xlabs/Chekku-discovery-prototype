@@ -52,6 +52,21 @@ export type PaymentStatus =
 
 export type AttendanceConfirmation = "Confirmed" | "Unable" | "Pending";
 
+export type TimeOfDay = "Morning" | "Afternoon" | "Evening";
+
+export interface JobRescheduleEvent {
+  type: "rescheduled";
+  timestamp: string;
+  fromDateOffsetDays: number;
+  fromTimeOfDay: TimeOfDay;
+  toDateOffsetDays: number;
+  toTimeOfDay: TimeOfDay;
+  reason: string;
+  note?: string;
+}
+
+export type JobEvent = JobRescheduleEvent;
+
 export interface Job {
   id: string;
   cgNumber: string;
@@ -70,7 +85,7 @@ export interface Job {
   scope: string;
   serviceCodes?: string[];
   dateOffsetDays: number;
-  timeOfDay: "Morning" | "Afternoon" | "Evening";
+  timeOfDay: TimeOfDay;
   startTime: string;
   value: number;
   estimatedDurationMinutes: number;
@@ -84,6 +99,7 @@ export interface Job {
   attendance: AttendanceConfirmation;
   checkInAt?: string;
   complianceRequired: { name: string; verified: boolean }[];
+  events?: JobEvent[];
 }
 
 export interface OpportunityResponse {

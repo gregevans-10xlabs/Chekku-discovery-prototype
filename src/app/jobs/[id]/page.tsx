@@ -276,6 +276,41 @@ export default function JobDetail({
         ) : null}
       </section>
 
+      {/* Schedule history */}
+      {job.events && job.events.length > 0 ? (
+        <section className="mt-6 px-4">
+          <h2 className="mb-2 text-xs font-semibold uppercase tracking-wider text-muted">
+            Schedule history
+          </h2>
+          <ol className="space-y-2">
+            {[...job.events].reverse().map((e, i) => (
+              <li
+                key={i}
+                className="rounded-2xl border border-border bg-surface p-3"
+              >
+                <div className="flex items-start justify-between gap-2">
+                  <p className="text-[13px] font-semibold">
+                    Rescheduled {relativeDayLabel(e.fromDateOffsetDays)} ·{" "}
+                    {e.fromTimeOfDay} → {relativeDayLabel(e.toDateOffsetDays)} ·{" "}
+                    {e.toTimeOfDay}
+                  </p>
+                  <span className="shrink-0 text-[11px] text-muted">
+                    {new Date(e.timestamp).toLocaleDateString("en-AU", {
+                      day: "numeric",
+                      month: "short",
+                    })}
+                  </span>
+                </div>
+                <p className="mt-1 text-xs text-muted">Reason: {e.reason}</p>
+                {e.note ? (
+                  <p className="mt-1 text-xs text-muted">“{e.note}”</p>
+                ) : null}
+              </li>
+            ))}
+          </ol>
+        </section>
+      ) : null}
+
       <section className="mt-6 px-4">
         {job.client === "Harvey Norman" ? (
           <div className="rounded-xl bg-surface p-3 text-xs text-muted">
@@ -284,12 +319,12 @@ export default function JobDetail({
             <span className="text-foreground">Circl Support</span> if the job
             can’t go ahead.
           </div>
-        ) : (
+        ) : jobDone ? null : (
           <Link
-            href="#reschedule"
-            className="flex items-center justify-between rounded-xl bg-surface p-3 text-sm text-muted"
+            href={`/jobs/${job.id}/reschedule`}
+            className="flex items-center justify-between rounded-xl bg-surface p-3 text-sm text-foreground"
           >
-            <span>Need to reschedule?</span>
+            <span>Change schedule</span>
             <span className="text-accent">→</span>
           </Link>
         )}

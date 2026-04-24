@@ -7,6 +7,7 @@ import { PageHeader } from "@/components/ui/PageHeader";
 import { Badge } from "@/components/ui/Badge";
 import {
   dateForOffset,
+  densityColorClass,
   relativeDayLabel,
   startTimeToMinutes,
 } from "@/lib/demo-data";
@@ -286,7 +287,9 @@ function CalendarView({ jobs }: { jobs: Job[] }) {
               : isToday
                 ? "text-accent"
                 : "text-foreground";
-            const dotClass = isSelected ? "bg-white" : "bg-accent";
+            const dotClass = isSelected
+              ? "bg-white"
+              : densityColorClass(dayJobs.length);
             return (
               <button
                 type="button"
@@ -303,14 +306,11 @@ function CalendarView({ jobs }: { jobs: Job[] }) {
                   {d.getDate()}
                 </span>
                 {dayJobs.length ? (
-                  <div className="mt-auto flex flex-wrap gap-0.5">
-                    {dayJobs.slice(0, 4).map((j) => (
-                      <span
-                        key={j.id}
-                        className={"h-1.5 w-1.5 rounded-full " + dotClass}
-                        aria-hidden
-                      />
-                    ))}
+                  <div className="mt-auto flex justify-start">
+                    <span
+                      className={"h-1.5 w-1.5 rounded-full " + dotClass}
+                      aria-hidden
+                    />
                   </div>
                 ) : null}
               </button>

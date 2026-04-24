@@ -12,7 +12,9 @@ import { getJobs, getOpportunities, getPastOpportunities, JAKE } from "@/lib/dem
 import type {
   AttendanceConfirmation,
   Job,
+  JobRescheduleEvent,
   Opportunity,
+  TimeOfDay,
   Trade,
 } from "@/lib/types";
 
@@ -43,7 +45,15 @@ type Action =
   | { type: "accept-job-from-opportunity"; opportunityId: string }
   | { type: "set-day-view"; view: PersistedState["dayView"] }
   | { type: "toggle-offline" }
-  | { type: "enable-team" };
+  | { type: "enable-team" }
+  | {
+      type: "reschedule-job";
+      jobId: string;
+      toDateOffsetDays: number;
+      toTimeOfDay: TimeOfDay;
+      reason: string;
+      note?: string;
+    };
 
 function defaultState(): PersistedState {
   return {
@@ -171,6 +181,40 @@ function reducer(state: PersistedState, action: Action): PersistedState {
       return { ...state, forceOffline: !state.forceOffline };
     case "enable-team":
       return { ...state, hasTeam: true };
+    case "reschedule-job": {
+      const job = state.jobs.find((j) => j.id === action.jobId);
+      if (!job) return state;
+      const newStartTime =
+        action.toTimeOfDay === "Morning"
+          ? "10:00 AM"
+          : action.toTimeOfDay === "Afternoon"
+            ? "2:00 PM"
+            : "5:00 PM";
+      const event: JobRescheduleEvent = {
+        type: "rescheduled",
+        timestamp: new Date().toISOString(),
+        fromDateOffsetDays: job.dateOffsetDays,
+        fromTimeOfDay: job.timeOfDay,
+        toDateOffsetDays: action.toDateOffsetDays,
+        toTimeOfDay: action.toTimeOfDay,
+        reason: action.reason,
+        note: action.note,
+      };
+      return {
+        ...state,
+        jobs: state.jobs.map((j) =>
+          j.id === action.jobId
+            ? {
+                ...j,
+                dateOffsetDays: action.toDateOffsetDays,
+                timeOfDay: action.toTimeOfDay,
+                startTime: newStartTime,
+                events: [...(j.events ?? []), event],
+              }
+            : j,
+        ),
+      };
+    }
     default:
       return state;
   }

@@ -70,6 +70,15 @@ function offsetToMonthDay(monthsAhead: number, day: number): number {
   return daysUntil(target);
 }
 
+// Tailwind class for a density indicator dot based on job count on a day.
+// Matches the Trade App reference: 1 job = blue, 2-3 = orange, 4+ = red.
+export function densityColorClass(count: number): string {
+  if (count <= 0) return "";
+  if (count === 1) return "bg-info";
+  if (count <= 3) return "bg-warn";
+  return "bg-danger";
+}
+
 // Parse a job startTime string ("9:00 AM", "2:30 PM") to minutes since midnight.
 // Used for sorting jobs within a day across multiple list views.
 export function startTimeToMinutes(s: string): number {
