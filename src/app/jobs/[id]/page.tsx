@@ -75,6 +75,56 @@ export default function JobDetail({
         </div>
       </section>
 
+      {/* Attendance prompt — surfaces when the trade hasn't yet confirmed */}
+      {!jobDone && job.attendance === "Pending" ? (
+        <section className="mt-3 px-4">
+          <div className="rounded-2xl border border-warn/40 bg-warn-soft p-4">
+            <p className="text-sm font-semibold text-warn">
+              Confirm your attendance
+            </p>
+            <p className="mt-1 text-xs text-foreground/90">
+              Check In is locked until you confirm you’ll attend this job.
+            </p>
+            <div className="mt-3 grid grid-cols-2 gap-2">
+              <button
+                type="button"
+                onClick={() =>
+                  dispatch({
+                    type: "set-attendance",
+                    jobId: job.id,
+                    attendance: "Confirmed",
+                  })
+                }
+                className="rounded-xl border border-success/30 bg-success/15 py-2.5 text-sm font-semibold text-success"
+              >
+                ✓ I’ll attend
+              </button>
+              <button
+                type="button"
+                onClick={() =>
+                  dispatch({
+                    type: "set-attendance",
+                    jobId: job.id,
+                    attendance: "Unable",
+                  })
+                }
+                className="rounded-xl border border-danger/30 bg-danger/15 py-2.5 text-sm font-semibold text-danger"
+              >
+                ✗ Can’t attend
+              </button>
+            </div>
+          </div>
+        </section>
+      ) : null}
+
+      {!jobDone && job.attendance === "Unable" ? (
+        <section className="mt-3 px-4">
+          <div className="rounded-2xl border border-danger/40 bg-danger/10 p-4 text-sm font-semibold text-danger">
+            Marked unable to attend — Circl Support has been notified.
+          </div>
+        </section>
+      ) : null}
+
       {/* Customer */}
       <section className="mt-4 space-y-2 px-4">
         <div className="rounded-2xl border border-border bg-surface p-4">
@@ -167,10 +217,12 @@ export default function JobDetail({
             subtitle={
               checkedIn
                 ? "Checked in on arrival"
-                : "Tap when you arrive on site"
+                : job.attendance !== "Confirmed"
+                  ? "Confirm attendance first"
+                  : "Tap when you arrive on site"
             }
             done={checkedIn}
-            disabled={false}
+            disabled={!checkedIn && job.attendance !== "Confirmed"}
             onClick={!checkedIn ? doCheckIn : undefined}
           />
           <WorkflowStep
