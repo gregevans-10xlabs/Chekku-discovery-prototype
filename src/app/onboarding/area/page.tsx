@@ -58,7 +58,7 @@ export default function AreaPage() {
 
   return (
     <main className="flex min-h-screen flex-col">
-      <OnboardingHeader step={4} />
+      <OnboardingHeader step={5} />
       <section className="flex-1 px-5 pt-6">
         <h1 className="text-2xl font-bold tracking-tight">Where are you based?</h1>
         <p className="mt-2 text-sm text-muted">

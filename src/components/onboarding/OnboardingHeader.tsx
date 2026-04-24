@@ -6,9 +6,10 @@ interface Props {
   step: number;
   total?: number;
   onBack?: () => void;
+  hideProgress?: boolean;
 }
 
-export function OnboardingHeader({ step, total = 5, onBack }: Props) {
+export function OnboardingHeader({ step, total = 6, onBack, hideProgress }: Props) {
   const router = useRouter();
   const pct = Math.round((step / total) * 100);
   return (
@@ -31,20 +32,24 @@ export function OnboardingHeader({ step, total = 5, onBack }: Props) {
             />
           </svg>
         </button>
-        <div className="flex-1">
-          <div className="flex items-center justify-between text-[11px] font-medium text-muted">
-            <span>
-              Step {step} of {total}
-            </span>
-            <span>{pct}%</span>
+        {hideProgress ? (
+          <div className="flex-1" />
+        ) : (
+          <div className="flex-1">
+            <div className="flex items-center justify-between text-[11px] font-medium text-muted">
+              <span>
+                Step {step} of {total}
+              </span>
+              <span>{pct}%</span>
+            </div>
+            <div className="mt-1 h-1 overflow-hidden rounded-full bg-surface-2">
+              <div
+                className="h-full rounded-full bg-accent transition-all"
+                style={{ width: `${pct}%` }}
+              />
+            </div>
           </div>
-          <div className="mt-1 h-1 overflow-hidden rounded-full bg-surface-2">
-            <div
-              className="h-full rounded-full bg-accent transition-all"
-              style={{ width: `${pct}%` }}
-            />
-          </div>
-        </div>
+        )}
       </div>
     </div>
   );

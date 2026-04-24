@@ -182,6 +182,7 @@ interface AppStateCtx {
   state: PersistedState;
   dispatch: (a: Action) => void;
   online: boolean;
+  hydrated: boolean;
 }
 
 const Ctx = createContext<AppStateCtx | null>(null);
@@ -238,8 +239,9 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
       state,
       dispatch,
       online: networkOnline && !state.forceOffline,
+      hydrated,
     }),
-    [state, dispatch, networkOnline],
+    [state, dispatch, networkOnline, hydrated],
   );
 
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;

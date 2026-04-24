@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { Suspense, useEffect, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/Button";
 import { OnboardingHeader } from "@/components/onboarding/OnboardingHeader";
 
@@ -18,7 +18,17 @@ function isValidAuMobile(v: string) {
 }
 
 export default function PhonePage() {
+  return (
+    <Suspense fallback={null}>
+      <PhoneInner />
+    </Suspense>
+  );
+}
+
+function PhoneInner() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const isSignIn = searchParams.get("mode") === "signin";
   const [phone, setPhone] = useState("");
   const valid = isValidAuMobile(phone);
 
@@ -34,17 +44,25 @@ export default function PhonePage() {
     try {
       localStorage.setItem("chekku:onboarding:phone", phone);
     } catch {}
-    router.push("/onboarding/verify");
+    router.push(isSignIn ? "/onboarding/verify?mode=signin" : "/onboarding/verify");
   };
 
   return (
     <main className="flex min-h-screen flex-col">
-      <OnboardingHeader step={1} onBack={() => router.push("/")} />
+      <OnboardingHeader
+        step={1}
+        onBack={() => router.push("/")}
+        hideProgress={isSignIn}
+      />
 
       <section className="flex-1 px-5 pt-6">
-        <h1 className="text-2xl font-bold tracking-tight">Your mobile number</h1>
+        <h1 className="text-2xl font-bold tracking-tight">
+          {isSignIn ? "Welcome back" : "Your mobile number"}
+        </h1>
         <p className="mt-2 text-sm text-muted">
-          We’ll send you a code to verify your number. This is your login.
+          {isSignIn
+            ? "Enter your mobile number to sign in. We’ll send you a code."
+            : "We’ll send you a code to verify your number. This is your login."}
         </p>
 
         <div className="mt-8">

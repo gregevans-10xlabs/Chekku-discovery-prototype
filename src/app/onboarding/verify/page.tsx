@@ -1,11 +1,23 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
-import { useRouter } from "next/navigation";
+import { Suspense, useEffect, useRef, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { OnboardingHeader } from "@/components/onboarding/OnboardingHeader";
+import { useAppState } from "@/lib/state/AppStateProvider";
 
 export default function VerifyPage() {
+  return (
+    <Suspense fallback={null}>
+      <VerifyInner />
+    </Suspense>
+  );
+}
+
+function VerifyInner() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const isSignIn = searchParams.get("mode") === "signin";
+  const { dispatch } = useAppState();
   const [digits, setDigits] = useState<string[]>(["", "", "", "", "", ""]);
   const [attempts, setAttempts] = useState(0);
   const [shaking, setShaking] = useState(false);
@@ -52,7 +64,12 @@ export default function VerifyPage() {
   const submit = (code: string[]) => {
     // Accept any 6-digit code in the prototype
     if (code.every((d) => d.length === 1)) {
-      router.push("/onboarding/details");
+      if (isSignIn) {
+        dispatch({ type: "onboard" });
+        router.replace("/home");
+      } else {
+        router.push("/onboarding/details");
+      }
       return;
     }
     setShaking(true);
@@ -68,9 +85,11 @@ export default function VerifyPage() {
 
   return (
     <main className="flex min-h-screen flex-col">
-      <OnboardingHeader step={1} />
+      <OnboardingHeader step={2} hideProgress={isSignIn} />
       <section className="flex-1 px-5 pt-6">
-        <h1 className="text-2xl font-bold tracking-tight">Enter your code</h1>
+        <h1 className="text-2xl font-bold tracking-tight">
+          {isSignIn ? "Verify it’s you" : "Enter your code"}
+        </h1>
         <p className="mt-2 text-sm text-muted">
           We sent a 6-digit code to{" "}
           <span className="text-foreground">+61 {phone}</span>.{" "}

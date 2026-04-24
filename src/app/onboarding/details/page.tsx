@@ -34,7 +34,7 @@ export default function DetailsPage() {
 
   return (
     <main className="flex min-h-screen flex-col">
-      <OnboardingHeader step={2} />
+      <OnboardingHeader step={3} />
 
       <section className="flex-1 px-5 pt-6">
         <h1 className="text-2xl font-bold tracking-tight">Tell us about you</h1>

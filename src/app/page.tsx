@@ -9,14 +9,19 @@ import { useAppState } from "@/lib/state/AppStateProvider";
 
 export default function Landing() {
   const router = useRouter();
-  const { state } = useAppState();
+  const { state, dispatch, hydrated } = useAppState();
 
   // Return users who already onboarded go straight to Home
   useEffect(() => {
-    if (state.onboarded) {
+    if (hydrated && state.onboarded) {
       router.replace("/home");
     }
-  }, [state.onboarded, router]);
+  }, [hydrated, state.onboarded, router]);
+
+  const becomeJake = () => {
+    dispatch({ type: "onboard" });
+    router.replace("/home");
+  };
 
   return (
     <main className="flex min-h-screen flex-col px-6 pb-8 pt-12">
@@ -54,10 +59,20 @@ export default function Landing() {
         </Button>
         <p className="text-center text-sm text-muted">
           Already have an account?{" "}
-          <Link href="/onboarding/phone" className="font-medium text-accent">
+          <Link
+            href="/onboarding/phone?mode=signin"
+            className="font-medium text-accent"
+          >
             Sign in
           </Link>
         </p>
+        <button
+          type="button"
+          onClick={becomeJake}
+          className="mx-auto text-[11px] text-muted-strong underline-offset-4 hover:underline"
+        >
+          Demo: skip to Home as Jake
+        </button>
       </div>
     </main>
   );

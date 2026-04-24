@@ -51,7 +51,7 @@ export default function ReadyPage() {
 
   return (
     <main className="flex min-h-screen flex-col">
-      <OnboardingHeader step={5} />
+      <OnboardingHeader step={6} />
       <section className="flex-1 px-5 pt-6">
         <div className="flex flex-col items-center gap-3 pt-2 text-center">
           <Logo size={56} />

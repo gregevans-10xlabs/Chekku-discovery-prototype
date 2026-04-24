@@ -11,15 +11,15 @@ export default function TabsLayout({
   children: React.ReactNode;
 }) {
   const router = useRouter();
-  const { state } = useAppState();
+  const { state, hydrated } = useAppState();
 
   useEffect(() => {
-    if (!state.onboarded) {
+    if (hydrated && !state.onboarded) {
       router.replace("/");
     }
-  }, [state.onboarded, router]);
+  }, [hydrated, state.onboarded, router]);
 
-  if (!state.onboarded) return null;
+  if (!hydrated || !state.onboarded) return null;
 
   return (
     <div className="flex min-h-screen flex-col bg-background">

@@ -33,7 +33,7 @@ export default function TradePage() {
 
   return (
     <main className="flex min-h-screen flex-col">
-      <OnboardingHeader step={3} />
+      <OnboardingHeader step={4} />
 
       <section className="flex-1 px-5 pt-6 pb-4">
         <h1 className="text-2xl font-bold tracking-tight">
