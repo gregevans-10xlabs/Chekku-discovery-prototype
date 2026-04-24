@@ -58,6 +58,19 @@ export function dateForOffset(days: number): Date {
   return offsetDate(days);
 }
 
+// Parse a job startTime string ("9:00 AM", "2:30 PM") to minutes since midnight.
+// Used for sorting jobs within a day across multiple list views.
+export function startTimeToMinutes(s: string): number {
+  const m = s.match(/^(\d{1,2}):(\d{2})\s*(AM|PM)$/i);
+  if (!m) return 0;
+  let h = parseInt(m[1], 10);
+  const min = parseInt(m[2], 10);
+  const period = m[3].toUpperCase();
+  if (period === "PM" && h !== 12) h += 12;
+  if (period === "AM" && h === 12) h = 0;
+  return h * 60 + min;
+}
+
 // ---------- Trade persona ----------
 export const JAKE: Trade = {
   fullName: "Jake Mitchell",

@@ -5,8 +5,18 @@ import { useMemo, useState } from "react";
 import { useAppState } from "@/lib/state/AppStateProvider";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { Badge } from "@/components/ui/Badge";
-import { dateForOffset, relativeDayLabel } from "@/lib/demo-data";
+import {
+  dateForOffset,
+  relativeDayLabel,
+  startTimeToMinutes,
+} from "@/lib/demo-data";
 import type { Job } from "@/lib/types";
+
+interface ScheduleSection {
+  key: string;
+  title: string;
+  jobs: Job[];
+}
 
 export default function SchedulePage() {
   const { state } = useAppState();
@@ -16,6 +26,30 @@ export default function SchedulePage() {
     () => [...state.jobs].sort((a, b) => a.dateOffsetDays - b.dateOffsetDays),
     [state.jobs],
   );
+
+  const sections = useMemo<ScheduleSection[]>(() => {
+    const byDayThenStart = (a: Job, b: Job) =>
+      a.dateOffsetDays - b.dateOffsetDays ||
+      startTimeToMinutes(a.startTime) - startTimeToMinutes(b.startTime);
+    const today = jobs
+      .filter((j) => j.dateOffsetDays === 0)
+      .sort(byDayThenStart);
+    const tomorrow = jobs
+      .filter((j) => j.dateOffsetDays === 1)
+      .sort(byDayThenStart);
+    const thisWeek = jobs
+      .filter((j) => j.dateOffsetDays >= 2 && j.dateOffsetDays <= 7)
+      .sort(byDayThenStart);
+    const completed = jobs
+      .filter((j) => j.dateOffsetDays < 0)
+      .sort((a, b) => b.dateOffsetDays - a.dateOffsetDays);
+    return [
+      { key: "today", title: "Today", jobs: today },
+      { key: "tomorrow", title: "Tomorrow", jobs: tomorrow },
+      { key: "thisWeek", title: "This week", jobs: thisWeek },
+      { key: "completed", title: "Recently completed", jobs: completed },
+    ];
+  }, [jobs]);
 
   return (
     <main className="pb-6">
@@ -53,15 +87,39 @@ export default function SchedulePage() {
       </div>
 
       {view === "list" ? (
-        <div className="space-y-3 px-4 pt-4">
-          {jobs.map((j) => (
-            <JobListRow key={j.id} job={j} />
-          ))}
+        <div className="space-y-5 px-4 pt-4">
+          {sections.map((section) =>
+            section.jobs.length === 0 ? null : (
+              <SectionGroup key={section.key} section={section} />
+            ),
+          )}
         </div>
       ) : (
         <CalendarView jobs={jobs} />
       )}
     </main>
+  );
+}
+
+function SectionGroup({ section }: { section: ScheduleSection }) {
+  const totalValue = section.jobs.reduce((s, j) => s + j.value, 0);
+  return (
+    <div>
+      <div className="mb-2 flex items-baseline justify-between">
+        <h2 className="text-xs font-semibold uppercase tracking-wider text-muted">
+          {section.title}{" "}
+          <span className="text-muted-strong">({section.jobs.length})</span>
+        </h2>
+        <span className="text-[11px] font-medium text-muted">
+          ${totalValue.toFixed(2)}
+        </span>
+      </div>
+      <div className="space-y-3">
+        {section.jobs.map((j) => (
+          <JobListRow key={j.id} job={j} />
+        ))}
+      </div>
+    </div>
   );
 }
 

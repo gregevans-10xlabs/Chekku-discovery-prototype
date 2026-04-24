@@ -4,20 +4,13 @@ import { useMemo } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useAppState } from "@/lib/state/AppStateProvider";
-import { getComplianceDocs, relativeDayLabel } from "@/lib/demo-data";
+import {
+  getComplianceDocs,
+  relativeDayLabel,
+  startTimeToMinutes,
+} from "@/lib/demo-data";
 import type { AttendanceConfirmation, Job } from "@/lib/types";
 import { Badge } from "@/components/ui/Badge";
-
-function startTimeToMinutes(s: string): number {
-  const m = s.match(/^(\d{1,2}):(\d{2})\s*(AM|PM)$/i);
-  if (!m) return 0;
-  let h = parseInt(m[1], 10);
-  const min = parseInt(m[2], 10);
-  const period = m[3].toUpperCase();
-  if (period === "PM" && h !== 12) h += 12;
-  if (period === "AM" && h === 12) h = 0;
-  return h * 60 + min;
-}
 
 export default function HomePage() {
   const { state, dispatch } = useAppState();
