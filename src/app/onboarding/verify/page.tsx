@@ -43,16 +43,28 @@ function VerifyInner() {
   }, [resendIn]);
 
   const handleChange = (i: number, value: string) => {
-    const v = value.replace(/\D/g, "").slice(-1);
-    setDigits((d) => {
-      const next = [...d];
-      next[i] = v;
+    const digits = value.replace(/\D/g, "");
+    if (!digits) return;
+    setDigits((prev) => {
+      const next = [...prev];
+      if (digits.length === 1) {
+        next[i] = digits;
+      } else {
+        // SMS autofill / paste of multiple digits — distribute from index i.
+        for (let j = 0; j < Math.min(digits.length, 6 - i); j++) {
+          next[i + j] = digits[j];
+        }
+      }
+      // Auto-submit against the fresh state once all 6 are populated.
+      if (next.every((d) => d.length === 1)) {
+        setTimeout(() => submit(next), 120);
+      }
+      // Move focus to the next empty input (or the last if all full).
+      const nextEmpty = next.findIndex((d) => d === "");
+      const focusIdx = nextEmpty === -1 ? 5 : nextEmpty;
+      setTimeout(() => refs.current[focusIdx]?.focus(), 0);
       return next;
     });
-    if (v && i < 5) refs.current[i + 1]?.focus();
-    if (v && i === 5) {
-      setTimeout(() => submit([...digits.slice(0, 5), v]), 120);
-    }
   };
 
   const handleKeyDown = (i: number, e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -62,7 +74,7 @@ function VerifyInner() {
   };
 
   const submit = (code: string[]) => {
-    // Accept any 6-digit code in the prototype
+    // Accept any 6-digit code in the prototype.
     if (code.every((d) => d.length === 1)) {
       if (isSignIn) {
         dispatch({ type: "onboard" });
@@ -77,9 +89,11 @@ function VerifyInner() {
       setDigits(["", "", "", "", "", ""]);
       setShaking(false);
       refs.current[0]?.focus();
-      const next = attempts + 1;
-      setAttempts(next);
-      if (next >= 3) router.replace("/onboarding/phone");
+      setAttempts((a) => {
+        const next = a + 1;
+        if (next >= 3) router.replace("/onboarding/phone");
+        return next;
+      });
     }, 300);
   };
 
