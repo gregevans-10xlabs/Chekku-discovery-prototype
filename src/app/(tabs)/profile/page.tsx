@@ -131,21 +131,29 @@ export default function ProfilePage() {
         </div>
       </Section>
 
-      <Section title="Demo controls" tone="muted">
+      <Section title="Account" tone="muted">
         <div className="rounded-2xl border border-border bg-surface p-4 text-xs text-muted">
           <p>
-            This prototype is a single-device demo. Tap below to reset all
-            state and begin again from the landing screen.
+            Sign out clears your local data on this device — useful for
+            starting a fresh demo run.
           </p>
           <Button
             variant="danger"
             className="mt-3"
             onClick={() => {
+              try {
+                const keys: string[] = [];
+                for (let i = 0; i < localStorage.length; i++) {
+                  const k = localStorage.key(i);
+                  if (k && k.startsWith("chekku:")) keys.push(k);
+                }
+                keys.forEach((k) => localStorage.removeItem(k));
+              } catch {}
               dispatch({ type: "reset" });
-              router.push("/");
+              router.replace("/");
             }}
           >
-            Reset demo
+            Sign out
           </Button>
         </div>
       </Section>
