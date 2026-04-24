@@ -225,13 +225,22 @@ export default function JobDetail({
       </section>
 
       <section className="mt-6 px-4">
-        <Link
-          href="#reschedule"
-          className="flex items-center justify-between rounded-xl bg-surface p-3 text-sm text-muted"
-        >
-          <span>Need to reschedule?</span>
-          <span className="text-accent">→</span>
-        </Link>
+        {job.client === "Harvey Norman" ? (
+          <div className="rounded-xl bg-surface p-3 text-xs text-muted">
+            Reschedules aren’t available for Harvey Norman jobs — dates are
+            set with the customer at point of sale. Contact{" "}
+            <span className="text-foreground">Circl Support</span> if the job
+            can’t go ahead.
+          </div>
+        ) : (
+          <Link
+            href="#reschedule"
+            className="flex items-center justify-between rounded-xl bg-surface p-3 text-sm text-muted"
+          >
+            <span>Need to reschedule?</span>
+            <span className="text-accent">→</span>
+          </Link>
+        )}
       </section>
     </main>
   );
