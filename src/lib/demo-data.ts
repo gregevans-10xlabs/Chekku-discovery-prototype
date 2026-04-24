@@ -58,6 +58,18 @@ export function dateForOffset(days: number): Date {
   return offsetDate(days);
 }
 
+// Days from TODAY to the nth-of-month that's `monthsAhead` from TODAY's month.
+// Used to anchor demo jobs to specific calendar positions (e.g. "the 15th of
+// next month") so the calendar view always shows content even if TODAY drifts.
+function offsetToMonthDay(monthsAhead: number, day: number): number {
+  const target = new Date(
+    TODAY.getFullYear(),
+    TODAY.getMonth() + monthsAhead,
+    day,
+  );
+  return daysUntil(target);
+}
+
 // Parse a job startTime string ("9:00 AM", "2:30 PM") to minutes since midnight.
 // Used for sorting jobs within a day across multiple list views.
 export function startTimeToMinutes(s: string): number {
@@ -585,7 +597,7 @@ export function getJobs(): Job[] {
       workOrder: "WO-48101",
       scope: "Standard Starlink residential installation.",
       serviceCodes: ["CONCP", "PREM SBS"],
-      dateOffsetDays: 14,
+      dateOffsetDays: offsetToMonthDay(1, 5),
       timeOfDay: "Morning",
       startTime: "10:00 AM",
       value: 338.8,
@@ -616,7 +628,7 @@ export function getJobs(): Job[] {
       workOrder: "WO-48114",
       scope: "65″ TV wall mount + soundbar.",
       serviceCodes: ["TVWMLL"],
-      dateOffsetDays: 21,
+      dateOffsetDays: offsetToMonthDay(1, 15),
       timeOfDay: "Afternoon",
       startTime: "1:30 PM",
       value: 245.0,
@@ -651,7 +663,7 @@ export function getJobs(): Job[] {
       workOrder: "WO-48127",
       scope: "Standard Starlink residential installation — heritage tile roof, careful penetration required.",
       serviceCodes: ["CONCP", "PREM SBS"],
-      dateOffsetDays: 28,
+      dateOffsetDays: offsetToMonthDay(1, 25),
       timeOfDay: "Morning",
       startTime: "9:00 AM",
       value: 365.0,
@@ -682,7 +694,7 @@ export function getJobs(): Job[] {
       workOrder: "WO-48140",
       scope: "Standard Starlink residential installation.",
       serviceCodes: ["CONCP", "PREM SBS"],
-      dateOffsetDays: 35,
+      dateOffsetDays: offsetToMonthDay(2, 10),
       timeOfDay: "Afternoon",
       startTime: "2:00 PM",
       value: 338.8,
@@ -713,7 +725,7 @@ export function getJobs(): Job[] {
       workOrder: "WO-48155",
       scope: "55″ TV wall mount + soundbar + cable concealment.",
       serviceCodes: ["TVWMLL"],
-      dateOffsetDays: 42,
+      dateOffsetDays: offsetToMonthDay(2, 20),
       timeOfDay: "Morning",
       startTime: "11:00 AM",
       value: 245.0,
