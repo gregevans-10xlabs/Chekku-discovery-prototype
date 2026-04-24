@@ -40,6 +40,9 @@ export default function SchedulePage() {
     const thisWeek = jobs
       .filter((j) => j.dateOffsetDays >= 2 && j.dateOffsetDays <= 7)
       .sort(byDayThenStart);
+    const later = jobs
+      .filter((j) => j.dateOffsetDays >= 8)
+      .sort(byDayThenStart);
     const completed = jobs
       .filter((j) => j.dateOffsetDays < 0)
       .sort((a, b) => b.dateOffsetDays - a.dateOffsetDays);
@@ -47,6 +50,7 @@ export default function SchedulePage() {
       { key: "today", title: "Today", jobs: today },
       { key: "tomorrow", title: "Tomorrow", jobs: tomorrow },
       { key: "thisWeek", title: "This week", jobs: thisWeek },
+      { key: "later", title: "Later", jobs: later },
       { key: "completed", title: "Recently completed", jobs: completed },
     ];
   }, [jobs]);
@@ -175,37 +179,88 @@ function JobListRow({ job }: { job: Job }) {
 
 function CalendarView({ jobs }: { jobs: Job[] }) {
   const today = new Date();
-  const start = new Date(today.getFullYear(), today.getMonth(), 1);
-  const startDow = start.getDay();
+  const todayKey = dateKey(today);
+  const [monthOffset, setMonthOffset] = useState(0);
+  const [selectedKey, setSelectedKey] = useState<string | null>(null);
+
+  const month = useMemo(
+    () => new Date(today.getFullYear(), today.getMonth() + monthOffset, 1),
+    [today, monthOffset],
+  );
+  const monthLabel = month.toLocaleDateString("en-AU", {
+    month: "long",
+    year: "numeric",
+  });
+
+  const startDow = month.getDay();
   const daysInMonth = new Date(
-    today.getFullYear(),
-    today.getMonth() + 1,
+    month.getFullYear(),
+    month.getMonth() + 1,
     0,
   ).getDate();
 
   const cells: (Date | null)[] = [];
   for (let i = 0; i < startDow; i++) cells.push(null);
   for (let d = 1; d <= daysInMonth; d++) {
-    cells.push(new Date(today.getFullYear(), today.getMonth(), d));
+    cells.push(new Date(month.getFullYear(), month.getMonth(), d));
   }
 
-  const byDay = new Map<string, Job[]>();
-  jobs.forEach((j) => {
-    const d = dateForOffset(j.dateOffsetDays);
-    const key = `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
-    const arr = byDay.get(key) ?? [];
-    arr.push(j);
-    byDay.set(key, arr);
-  });
+  const byDay = useMemo(() => {
+    const map = new Map<string, Job[]>();
+    jobs.forEach((j) => {
+      const d = dateForOffset(j.dateOffsetDays);
+      const key = dateKey(d);
+      const arr = map.get(key) ?? [];
+      arr.push(j);
+      map.set(key, arr);
+    });
+    return map;
+  }, [jobs]);
+
+  const selectedJobs = selectedKey ? (byDay.get(selectedKey) ?? []) : null;
+  const selectedDate = selectedKey ? parseDateKey(selectedKey) : null;
 
   return (
     <div className="px-4 pt-4">
       <div className="rounded-2xl border border-border bg-surface p-3">
-        <div className="mb-2 text-center text-sm font-semibold">
-          {today.toLocaleDateString("en-AU", {
-            month: "long",
-            year: "numeric",
-          })}
+        <div className="mb-2 flex items-center justify-between">
+          <button
+            type="button"
+            onClick={() => {
+              setMonthOffset((o) => o - 1);
+              setSelectedKey(null);
+            }}
+            aria-label="Previous month"
+            className="flex h-8 w-8 items-center justify-center rounded-full text-muted hover:bg-surface-2 hover:text-foreground"
+          >
+            ‹
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              setMonthOffset(0);
+              setSelectedKey(null);
+            }}
+            className="text-sm font-semibold"
+          >
+            {monthLabel}
+            {monthOffset !== 0 ? (
+              <span className="ml-2 text-[11px] font-medium text-accent">
+                Today
+              </span>
+            ) : null}
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              setMonthOffset((o) => o + 1);
+              setSelectedKey(null);
+            }}
+            aria-label="Next month"
+            className="flex h-8 w-8 items-center justify-center rounded-full text-muted hover:bg-surface-2 hover:text-foreground"
+          >
+            ›
+          </button>
         </div>
         <div className="grid grid-cols-7 gap-1 text-center text-[10px] text-muted">
           {["S", "M", "T", "W", "T", "F", "S"].map((l, i) => (
@@ -215,56 +270,112 @@ function CalendarView({ jobs }: { jobs: Job[] }) {
         <div className="mt-1 grid grid-cols-7 gap-1">
           {cells.map((d, i) => {
             if (!d) return <div key={i} />;
-            const key = `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
+            const key = dateKey(d);
             const dayJobs = byDay.get(key) ?? [];
-            const isToday = d.toDateString() === today.toDateString();
+            const isToday = key === todayKey;
+            const isSelected = selectedKey === key;
+            const cellClass = isSelected
+              ? "border-accent bg-accent text-white"
+              : isToday
+                ? "border-accent bg-accent-soft"
+                : dayJobs.length
+                  ? "border-border-strong bg-surface-2"
+                  : "border-transparent";
+            const numberClass = isSelected
+              ? "text-white"
+              : isToday
+                ? "text-accent"
+                : "text-foreground";
+            const dotClass = isSelected ? "bg-white" : "bg-accent";
             return (
-              <div
+              <button
+                type="button"
                 key={i}
+                onClick={() => setSelectedKey(isSelected ? null : key)}
+                aria-pressed={isSelected}
+                aria-label={`${d.toLocaleDateString("en-AU", { weekday: "long", day: "numeric", month: "long" })}${dayJobs.length ? `, ${dayJobs.length} job${dayJobs.length === 1 ? "" : "s"}` : ""}`}
                 className={
-                  "flex aspect-square flex-col rounded-lg border p-1 " +
-                  (isToday
-                    ? "border-accent bg-accent-soft"
-                    : dayJobs.length
-                      ? "border-border-strong bg-surface-2"
-                      : "border-transparent")
+                  "flex aspect-square flex-col rounded-lg border p-1 transition-colors " +
+                  cellClass
                 }
               >
-                <span
-                  className={
-                    "text-[10px] font-medium " +
-                    (isToday ? "text-accent" : "text-foreground")
-                  }
-                >
+                <span className={"text-[10px] font-medium " + numberClass}>
                   {d.getDate()}
                 </span>
                 {dayJobs.length ? (
                   <div className="mt-auto flex flex-wrap gap-0.5">
-                    {dayJobs.map((j) => (
+                    {dayJobs.slice(0, 4).map((j) => (
                       <span
                         key={j.id}
-                        className="h-1.5 w-1.5 rounded-full bg-accent"
-                        aria-label={j.type}
+                        className={"h-1.5 w-1.5 rounded-full " + dotClass}
+                        aria-hidden
                       />
                     ))}
                   </div>
                 ) : null}
-              </div>
+              </button>
             );
           })}
         </div>
       </div>
 
-      <div className="mt-4 space-y-2">
-        <h3 className="text-xs font-semibold uppercase tracking-wider text-muted">
-          Upcoming
-        </h3>
-        {jobs
-          .filter((j) => j.dateOffsetDays >= 0)
-          .map((j) => (
-            <JobListRow key={j.id} job={j} />
-          ))}
+      <div className="mt-4">
+        {selectedDate ? (
+          <div className="mb-2 flex items-center justify-between">
+            <h3 className="text-xs font-semibold uppercase tracking-wider text-muted">
+              {selectedDate.toLocaleDateString("en-AU", {
+                weekday: "long",
+                day: "numeric",
+                month: "long",
+              })}
+              <span className="ml-1.5 text-muted-strong">
+                ({selectedJobs?.length ?? 0})
+              </span>
+            </h3>
+            <button
+              type="button"
+              onClick={() => setSelectedKey(null)}
+              className="text-[11px] font-medium text-accent"
+            >
+              Clear
+            </button>
+          </div>
+        ) : (
+          <h3 className="mb-2 text-xs font-semibold uppercase tracking-wider text-muted">
+            Upcoming
+          </h3>
+        )}
+        <div className="space-y-2">
+          {selectedJobs ? (
+            selectedJobs.length === 0 ? (
+              <p className="rounded-2xl border border-border bg-surface p-4 text-sm text-muted">
+                No jobs on this day.
+              </p>
+            ) : (
+              selectedJobs
+                .sort(
+                  (a, b) =>
+                    startTimeToMinutes(a.startTime) -
+                    startTimeToMinutes(b.startTime),
+                )
+                .map((j) => <JobListRow key={j.id} job={j} />)
+            )
+          ) : (
+            jobs
+              .filter((j) => j.dateOffsetDays >= 0)
+              .map((j) => <JobListRow key={j.id} job={j} />)
+          )}
+        </div>
       </div>
     </div>
   );
+}
+
+function dateKey(d: Date): string {
+  return `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
+}
+
+function parseDateKey(key: string): Date {
+  const [y, m, d] = key.split("-").map((s) => parseInt(s, 10));
+  return new Date(y, m, d);
 }
