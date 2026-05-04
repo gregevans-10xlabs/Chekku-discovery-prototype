@@ -48,6 +48,8 @@ export default function HomePage() {
     <main className="flex flex-col gap-4 pb-6">
       <HomeHeader firstName={state.trade.firstName} tier={state.trade.tier} />
 
+      <NotificationsStrip />
+
       {view === "morning" && (
         <MorningView jobs={todayJobs} dispatch={dispatch} router={router} />
       )}
@@ -70,6 +72,111 @@ export default function HomePage() {
       <PendingResponsesStrip />
       <ComplianceStrip />
     </main>
+  );
+}
+
+// Notifications by exception only (per spec): two valid cases — jeopardy on
+// an assigned job, or an urgent opportunity available now. Both are derived
+// from current state, so resolving the underlying condition (e.g. accepting
+// the opportunity, equipment arriving) removes the notification.
+function NotificationsStrip() {
+  const { state } = useAppState();
+  const items = useMemo(() => {
+    const out: Array<{
+      id: string;
+      tone: "warn" | "accent";
+      icon: string;
+      label: string;
+      title: string;
+      body: string;
+      href: string;
+      cta: string;
+    }> = [];
+
+    // Jeopardy: tomorrow's job with equipment not yet received.
+    const jeopardyJob = state.jobs.find(
+      (j) =>
+        j.dateOffsetDays === 1 &&
+        (j.equipmentDeliveryStatus === "Not Yet Received" ||
+          j.equipmentDeliveryStatus === "Delayed"),
+    );
+    if (jeopardyJob) {
+      out.push({
+        id: `jeopardy-${jeopardyJob.id}`,
+        tone: "warn",
+        icon: "⚠️",
+        label: "Equipment not delivered",
+        title: `Tomorrow's ${jeopardyJob.customer.suburb} job`,
+        body: `${jeopardyJob.type} at ${jeopardyJob.startTime} — equipment hasn't arrived. Tap to contact Circl Support.`,
+        href: `/jobs/${jeopardyJob.id}`,
+        cta: "View job",
+      });
+    }
+
+    // Urgent opportunity: any urgent opportunity that hasn't been responded to.
+    const urgentOpp = state.opportunities.find(
+      (o) => o.urgent && !o.outcome,
+    );
+    if (urgentOpp) {
+      out.push({
+        id: `urgent-${urgentOpp.id}`,
+        tone: "accent",
+        icon: "⚡",
+        label: "Urgent job available",
+        title: `${urgentOpp.type} · ${urgentOpp.suburb.replace(" NSW", "")}`,
+        body: `${urgentOpp.distanceKm.toFixed(1)} km away · ${urgentOpp.timeOfDay} today · $${urgentOpp.value.toFixed(0)}.`,
+        href: `/find-jobs/${urgentOpp.id}`,
+        cta: "View opportunity",
+      });
+    }
+
+    return out;
+  }, [state.jobs, state.opportunities]);
+
+  if (items.length === 0) return null;
+
+  return (
+    <div className="space-y-2 px-5">
+      {items.map((n) => {
+        const wrapClass =
+          n.tone === "warn"
+            ? "border-warn/40 bg-warn-soft"
+            : "border-accent/40 bg-accent-soft";
+        const labelClass = n.tone === "warn" ? "text-warn" : "text-accent";
+        return (
+          <Link
+            key={n.id}
+            href={n.href}
+            className={
+              "block rounded-2xl border p-4 transition-colors " + wrapClass
+            }
+          >
+            <div className="flex items-start gap-3">
+              <span aria-hidden className="text-xl leading-tight">
+                {n.icon}
+              </span>
+              <div className="min-w-0 flex-1">
+                <p
+                  className={
+                    "text-[11px] font-semibold uppercase tracking-wider " +
+                    labelClass
+                  }
+                >
+                  {n.label}
+                </p>
+                <p className="mt-0.5 text-[14px] font-semibold">{n.title}</p>
+                <p className="mt-1 text-[12px] leading-5 text-foreground/90">
+                  {n.body}
+                </p>
+                <p className={"mt-2 text-[12px] font-semibold " + labelClass}>
+                  {n.cta} →
+                </p>
+              </div>
+            </div>
+          </Link>
+        );
+      })}
+    </div>
   );
 }
 
