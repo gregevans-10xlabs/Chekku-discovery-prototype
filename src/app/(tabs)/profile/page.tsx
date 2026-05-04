@@ -1,306 +1,210 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import Link from "next/link";
+import { useMemo } from "react";
 import { useAppState } from "@/lib/state/AppStateProvider";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { Badge } from "@/components/ui/Badge";
-import { Button } from "@/components/ui/Button";
-import { getComplianceDocs } from "@/lib/demo-data";
-import type { ComplianceDocument } from "@/lib/types";
+import { getComplianceDocs, getTeam } from "@/lib/demo-data";
 
-export default function ProfilePage() {
-  const { state, dispatch } = useAppState();
-  const router = useRouter();
+interface AttentionItem {
+  label: string;
+  href: string;
+}
+
+export default function ProfileHub() {
+  const { state } = useAppState();
   const docs = getComplianceDocs();
+  const team = getTeam();
+  const sub = state.trade.subscription;
+
+  // Compliance summary for hub tile
+  const complianceCounts = useMemo(
+    () => ({
+      active: docs.filter((d) => d.status === "Active").length,
+      expiring: docs.filter((d) => d.status === "Expiring Soon").length,
+      expired: docs.filter((d) => d.status === "Expired").length,
+      missing: docs.filter((d) => d.status === "Not Started").length,
+    }),
+    [docs],
+  );
+
+  // "Needs your attention" derivation — only truly action-required items.
+  const attention = useMemo<AttentionItem[]>(() => {
+    const items: AttentionItem[] = [];
+    docs
+      .filter((d) => d.status === "Expiring Soon" || d.status === "Expired")
+      .forEach((d) => {
+        const when = d.expiresAt
+          ? Math.ceil(
+              (new Date(d.expiresAt).getTime() - Date.now()) /
+                (1000 * 60 * 60 * 24),
+            )
+          : null;
+        const desc =
+          d.status === "Expired"
+            ? `${d.name} has expired`
+            : when !== null
+              ? `${d.name} expires in ${when} days`
+              : `${d.name} expires soon`;
+        items.push({ label: desc, href: "/profile/compliance" });
+      });
+    if (!state.trade.bankAccount) {
+      items.push({
+        label: "Add bank account so settlements can release",
+        href: "/money/bank",
+      });
+    }
+    return items;
+  }, [docs, state.trade.bankAccount]);
+
+  const subPct = Math.round((sub.allocatedYTD / sub.cap) * 100);
+  const teamSummary = state.hasTeam
+    ? `${team.members.length} member${team.members.length === 1 ? "" : "s"} configured`
+    : "Off · Enable to manage subs / employees";
 
   return (
-    <main className="pb-6">
+    <main className="pb-8">
       <PageHeader title="Profile" />
 
+      {/* Identity card — compact */}
       <section className="px-5 pt-4">
         <div className="rounded-2xl border border-border bg-surface p-4">
           <div className="flex items-center gap-3">
             <div className="flex h-14 w-14 items-center justify-center rounded-full bg-accent-soft text-xl font-bold text-accent">
               {state.trade.firstName.charAt(0)}
             </div>
-            <div>
+            <div className="min-w-0 flex-1">
               <p className="text-[15px] font-semibold">
                 {state.trade.fullName}
               </p>
-              <p className="text-xs text-muted">ABN {state.trade.abn}</p>
-              <div className="mt-1 flex items-center gap-2">
-                <Badge tone="accent">★ {state.trade.tier} tier</Badge>
-              </div>
+              <p className="mt-0.5 text-xs text-muted">
+                ABN {state.trade.abn}
+              </p>
+              <p className="mt-0.5 text-xs text-muted">
+                {state.trade.serviceArea.suburb} · within{" "}
+                {state.trade.serviceArea.radiusKm} km
+              </p>
             </div>
-          </div>
-          <div className="mt-4 grid grid-cols-2 gap-2 text-xs">
-            <MetaBox label="Service area">
-              {state.trade.serviceArea.suburb} ·{" "}
-              {state.trade.serviceArea.radiusKm} km
-            </MetaBox>
-            <MetaBox label="On-time rate">
-              {(state.trade.onTimeRate * 100).toFixed(0)}%
-            </MetaBox>
+            <Badge tone="accent">★ {state.trade.tier}</Badge>
           </div>
         </div>
       </section>
 
-      <Section title="Performance">
-        <div className="space-y-2">
-          <PerformanceRow
-            label="On-time rate"
-            value={`${(state.trade.onTimeRate * 100).toFixed(0)}%`}
-            improvement="Improving to 90% would lift your job volume by ~25%"
-          />
-          <PerformanceRow
-            label="Completion rate"
-            value={`${(state.trade.completionRate * 100).toFixed(0)}%`}
-            improvement="Top 15% in your area — maintain to keep Silver tier"
-          />
-          <PerformanceRow
-            label="Reschedules"
-            value={state.trade.reschedulePeerPercentile}
-            improvement="Reduce further to qualify for Gold tier eligibility"
-          />
-        </div>
-      </Section>
-
-      <Section title="Compliance vault">
-        {COMPLIANCE_LAYERS.map((layer) => {
-          const layerDocs = docs.filter((d) => d.layer === layer.id);
-          if (layerDocs.length === 0) return null;
-          return (
-            <div key={layer.id} className="mb-4 last:mb-0">
-              <div className="mb-1.5 flex items-baseline justify-between">
-                <h3 className="text-[11px] font-semibold uppercase tracking-wider text-muted-strong">
-                  {layer.title}
-                </h3>
-                <span className="text-[10px] text-muted-strong">{layer.hint}</span>
-              </div>
-              <div className="space-y-2">
-                {layerDocs.map((d) => (
-                  <ComplianceRow key={d.id} doc={d} />
-                ))}
-              </div>
-            </div>
-          );
-        })}
-        <button
-          type="button"
-          className="mt-3 flex w-full items-center justify-center gap-2 rounded-xl border border-dashed border-border-strong bg-surface py-3 text-sm font-semibold text-muted hover:text-foreground"
-          style={{ minHeight: 44 }}
-        >
-          + Upload new document
-        </button>
-      </Section>
-
-      <Section title="Training & courses">
-        <div className="rounded-2xl border border-border bg-surface p-4 text-sm text-muted">
-          <p className="font-medium text-foreground">Recommended for you</p>
-          <ul className="mt-3 space-y-2.5 text-[13px]">
-            <li className="flex justify-between">
-              <span>Harvey Norman Installer Induction</span>
-              <span className="text-accent">Start</span>
-            </li>
-            <li className="flex justify-between">
-              <span>First Aid / HLTAID011</span>
-              <span className="text-accent">Book</span>
-            </li>
-            <li className="flex justify-between">
-              <span>Working at Heights refresher</span>
-              <span className="text-muted-strong">Due 270d</span>
-            </li>
-          </ul>
-        </div>
-      </Section>
-
-      <Section title="Subscription">
-        <div className="rounded-2xl border border-border bg-surface p-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-semibold">Free tier</p>
-              <p className="text-xs text-muted">
-                Allocated ${state.trade.subscription.allocatedYTD} of $
-                {state.trade.subscription.cap} this year
+      {/* Needs attention callout */}
+      {attention.length > 0 ? (
+        <section className="mt-3 px-5">
+          {attention.length === 1 ? (
+            <Link
+              href={attention[0].href}
+              className="block rounded-2xl border border-warn/40 bg-warn-soft p-4"
+            >
+              <p className="text-[11px] font-semibold uppercase tracking-wider text-warn">
+                ⚠ Needs your attention
               </p>
-            </div>
-            <Badge tone="warn">75% used</Badge>
-          </div>
-          <div className="mt-3 h-2 overflow-hidden rounded-full bg-surface-2">
-            <div
-              className="h-full rounded-full bg-accent"
-              style={{
-                width: `${(state.trade.subscription.allocatedYTD / state.trade.subscription.cap) * 100}%`,
-              }}
-            />
-          </div>
-          <p className="mt-3 text-[13px] text-muted">
-            Upgrade to <span className="text-foreground">$518/year</span> and
-            we’ll guarantee you $10,000 of work in your area — if we don’t
-            deliver, next year is free.
-          </p>
-          <Button className="mt-4">See upgrade options</Button>
-        </div>
-      </Section>
+              <p className="mt-1 text-[14px] font-semibold">
+                {attention[0].label}
+              </p>
+              <p className="mt-2 text-[12px] font-semibold text-warn">
+                Resolve →
+              </p>
+            </Link>
+          ) : (
+            <Link
+              href={attention[0].href}
+              className="block rounded-2xl border border-warn/40 bg-warn-soft p-4"
+            >
+              <p className="text-[11px] font-semibold uppercase tracking-wider text-warn">
+                ⚠ {attention.length} things need your attention
+              </p>
+              <ul className="mt-1.5 space-y-0.5 text-[13px]">
+                {attention.slice(0, 3).map((a, i) => (
+                  <li key={i}>• {a.label}</li>
+                ))}
+              </ul>
+              <p className="mt-2 text-[12px] font-semibold text-warn">
+                Review →
+              </p>
+            </Link>
+          )}
+        </section>
+      ) : null}
 
-      <Section title="Team & subcontractors">
-        <div className="rounded-2xl border border-border bg-surface p-4">
-          <p className="text-sm">
-            {state.hasTeam
-              ? "My Team tab is enabled in your bottom navigation."
-              : "Work with subcontractors or employees? Turn on My Team to assign jobs and see their progress."}
-          </p>
-          <Button
-            className="mt-4"
-            variant={state.hasTeam ? "secondary" : "primary"}
-            onClick={() => {
-              dispatch({ type: "enable-team" });
-              router.push("/my-team");
-            }}
-            disabled={state.hasTeam}
-          >
-            {state.hasTeam ? "My Team enabled" : "Enable My Team"}
-          </Button>
+      {/* Hub tiles */}
+      <section className="mt-3 px-5">
+        <div className="overflow-hidden rounded-2xl border border-border bg-surface">
+          <HubRow
+            href="/profile/compliance"
+            label="Compliance"
+            summary={`${complianceCounts.active} active · ${complianceCounts.expiring} expiring · ${complianceCounts.missing} missing`}
+            attention={
+              complianceCounts.expiring > 0 || complianceCounts.expired > 0
+            }
+          />
+          <HubRow
+            href="/profile/performance"
+            label="Performance"
+            summary={`On-time ${(state.trade.onTimeRate * 100).toFixed(0)}% · ${state.trade.tier} tier`}
+          />
+          <HubRow
+            href="/profile/training"
+            label="Training & courses"
+            summary="3 recommended for you"
+          />
+          <HubRow
+            href="/profile/subscription"
+            label="Subscription"
+            summary={`${sub.tier} tier · ${subPct}% allocated`}
+            attention={subPct >= 90}
+          />
+          <HubRow
+            href="/profile/team"
+            label="My Team"
+            summary={teamSummary}
+          />
+          <HubRow
+            href="/profile/account"
+            label="Account"
+            summary="Identity, language, sign out"
+            isLast
+          />
         </div>
-      </Section>
-
-      <Section title="Account" tone="muted">
-        <div className="rounded-2xl border border-border bg-surface p-4 text-xs text-muted">
-          <p>
-            Sign out clears your local data on this device — useful for
-            starting a fresh demo run.
-          </p>
-          <Button
-            variant="danger"
-            className="mt-3"
-            onClick={() => {
-              try {
-                const keys: string[] = [];
-                for (let i = 0; i < localStorage.length; i++) {
-                  const k = localStorage.key(i);
-                  if (k && k.startsWith("chekku:")) keys.push(k);
-                }
-                keys.forEach((k) => localStorage.removeItem(k));
-              } catch {}
-              dispatch({ type: "reset" });
-              router.replace("/");
-            }}
-          >
-            Sign out
-          </Button>
-        </div>
-      </Section>
+      </section>
     </main>
   );
 }
 
-const COMPLIANCE_LAYERS: { id: 1 | 2 | 3; title: string; hint: string }[] = [
-  { id: 1, title: "Required to work", hint: "Mandatory" },
-  { id: 2, title: "Unlocks more work", hint: "Client-specific" },
-  { id: 3, title: "Specialist", hint: "Job-type-specific" },
-];
-
-function PerformanceRow({
+function HubRow({
+  href,
   label,
-  value,
-  improvement,
+  summary,
+  attention,
+  isLast,
 }: {
+  href: string;
   label: string;
-  value: string;
-  improvement: string;
+  summary: string;
+  attention?: boolean;
+  isLast?: boolean;
 }) {
   return (
-    <div className="rounded-2xl border border-border bg-surface p-4">
-      <div className="flex items-baseline justify-between gap-3">
-        <p className="text-[13px] text-muted">{label}</p>
-        <p className="text-[15px] font-semibold">{value}</p>
-      </div>
-      <p className="mt-1.5 text-[12px] leading-5 text-accent">{improvement}</p>
-    </div>
-  );
-}
-
-function Section({
-  title,
-  tone,
-  children,
-}: {
-  title: string;
-  tone?: "muted";
-  children: React.ReactNode;
-}) {
-  return (
-    <section className="mt-6 px-5">
-      <h2
-        className={
-          "mb-3 text-sm font-semibold " +
-          (tone === "muted" ? "text-muted-strong" : "text-muted")
-        }
-      >
-        {title}
-      </h2>
-      {children}
-    </section>
-  );
-}
-
-function MetaBox({
-  label,
-  children,
-}: {
-  label: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <div className="rounded-xl border border-border bg-surface-2 p-2.5">
-      <p className="text-[10px] uppercase tracking-wider text-muted">{label}</p>
-      <p className="mt-0.5 text-sm font-medium">{children}</p>
-    </div>
-  );
-}
-
-function ComplianceRow({ doc }: { doc: ComplianceDocument }) {
-  const tone =
-    doc.status === "Active"
-      ? "success"
-      : doc.status === "Expiring Soon"
-        ? "warn"
-        : doc.status === "Expired"
-          ? "danger"
-          : "neutral";
-  return (
-    <div className="rounded-2xl border border-border bg-surface p-4">
-      <div className="flex items-start justify-between gap-3">
-        <div className="min-w-0">
-          <p className="text-[14px] font-semibold">{doc.name}</p>
-          {doc.expiresAt ? (
-            <p className="mt-0.5 text-xs text-muted">
-              Expires{" "}
-              {new Date(doc.expiresAt).toLocaleDateString("en-AU", {
-                day: "numeric",
-                month: "short",
-                year: "numeric",
-              })}
-            </p>
+    <Link
+      href={href}
+      className={
+        "flex items-center justify-between gap-3 px-4 py-3.5 hover:bg-surface-2 " +
+        (isLast ? "" : "border-b border-border")
+      }
+    >
+      <div className="min-w-0">
+        <p className="flex items-center gap-2 text-[14px] font-semibold">
+          {label}
+          {attention ? (
+            <span className="inline-block h-1.5 w-1.5 rounded-full bg-warn" />
           ) : null}
-          {doc.unlocks ? (
-            <p className="mt-1.5 text-[12px] font-medium text-accent">
-              🔓 {doc.unlocks}
-            </p>
-          ) : null}
-        </div>
-        <Badge tone={tone}>{doc.status}</Badge>
+        </p>
+        <p className="mt-0.5 text-xs text-muted">{summary}</p>
       </div>
-      {doc.status === "Not Started" || doc.status === "Expiring Soon" ? (
-        <button
-          type="button"
-          className="mt-3 w-full rounded-xl border border-border-strong bg-surface-2 py-2 text-sm font-semibold text-foreground"
-          style={{ minHeight: 40 }}
-        >
-          {doc.status === "Not Started" ? "Start" : "Renew now"}
-        </button>
-      ) : null}
-    </div>
+      <span className="text-muted">→</span>
+    </Link>
   );
 }
