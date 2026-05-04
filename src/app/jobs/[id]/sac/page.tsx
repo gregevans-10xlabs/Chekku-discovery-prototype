@@ -1,6 +1,7 @@
 "use client";
 
 import { use } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAppState } from "@/lib/state/AppStateProvider";
 import { useFormState, useStepState } from "@/lib/state/useFormState";
@@ -193,7 +194,7 @@ export default function SacPage({
           />
 
           {!data.swmsPhoto ? (
-            <a
+            <Link
               href="/profile/library"
               className="block rounded-xl border border-info/30 bg-info/10 p-3 text-[12px] text-foreground/90"
             >
@@ -201,7 +202,7 @@ export default function SacPage({
                 Don&apos;t have a SWMS for this job?
               </span>{" "}
               Get a pre-filled template from the Document library →
-            </a>
+            </Link>
           ) : null}
 
           <Toggle

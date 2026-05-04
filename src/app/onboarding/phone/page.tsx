@@ -32,12 +32,17 @@ function PhoneInner() {
   const [phone, setPhone] = useState("");
   const valid = isValidAuMobile(phone);
 
+  // localStorage hydration on mount — legitimate effect-driven setState
+  // since localStorage is unavailable on the server. See onboarding/area
+  // for the production refactor note.
+  /* eslint-disable react-hooks/set-state-in-effect */
   useEffect(() => {
     try {
       const saved = localStorage.getItem("chekku:onboarding:phone");
       if (saved) setPhone(saved);
     } catch {}
   }, []);
+  /* eslint-enable react-hooks/set-state-in-effect */
 
   const submit = () => {
     if (!valid) return;

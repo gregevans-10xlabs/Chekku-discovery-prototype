@@ -19,18 +19,26 @@ function VerifyInner() {
   const isSignIn = searchParams.get("mode") === "signin";
   const { dispatch } = useAppState();
   const [digits, setDigits] = useState<string[]>(["", "", "", "", "", ""]);
-  const [attempts, setAttempts] = useState(0);
+  // Attempts counter is incremented inside an updater callback but never
+  // read directly — the value passes back to the updater, then drives a
+  // redirect. Destructure-only-the-setter pattern keeps lint happy.
+  const [, setAttempts] = useState(0);
   const [shaking, setShaking] = useState(false);
   const [phone, setPhone] = useState("");
   const [resendIn, setResendIn] = useState(30);
   const refs = useRef<(HTMLInputElement | null)[]>([]);
 
+  // localStorage hydration on mount — legitimate effect-driven setState
+  // since localStorage is unavailable on the server. See onboarding/area
+  // for the production refactor note.
+  /* eslint-disable react-hooks/set-state-in-effect */
   useEffect(() => {
     try {
       const saved = localStorage.getItem("chekku:onboarding:phone");
       if (saved) setPhone(saved);
     } catch {}
   }, []);
+  /* eslint-enable react-hooks/set-state-in-effect */
 
   useEffect(() => {
     refs.current[0]?.focus();

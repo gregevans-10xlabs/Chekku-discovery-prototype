@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { useAppState } from "@/lib/state/AppStateProvider";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { Badge } from "@/components/ui/Badge";
@@ -29,6 +29,12 @@ export default function ProfileHub() {
     [docs],
   );
 
+  // Stable per-mount — Date.now() is impure to call inline in render. The
+  // expiry calculation is informational, not safety-critical, so a per-mount
+  // snapshot is fine. Lazy useState init is the lint-clean equivalent of
+  // useMemo with empty deps for impure values.
+  const [nowMs] = useState(() => Date.now());
+
   // "Needs your attention" derivation — only truly action-required items.
   const attention = useMemo<AttentionItem[]>(() => {
     const items: AttentionItem[] = [];
@@ -37,7 +43,7 @@ export default function ProfileHub() {
       .forEach((d) => {
         const when = d.expiresAt
           ? Math.ceil(
-              (new Date(d.expiresAt).getTime() - Date.now()) /
+              (new Date(d.expiresAt).getTime() - nowMs) /
                 (1000 * 60 * 60 * 24),
             )
           : null;
@@ -65,7 +71,7 @@ export default function ProfileHub() {
       });
     }
     return items;
-  }, [docs, state.trade.bankAccount, state.trade.availability]);
+  }, [docs, state.trade.bankAccount, state.trade.availability, nowMs]);
 
   const subPct = Math.round((sub.allocatedYTD / sub.cap) * 100);
   const teamSummary = state.hasTeam

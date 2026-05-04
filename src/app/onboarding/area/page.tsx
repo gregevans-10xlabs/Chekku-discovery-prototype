@@ -15,6 +15,10 @@ export default function AreaPage() {
   } | null>(null);
   const [radius, setRadius] = useState<25 | 50 | 100 | 250>(50);
 
+  // localStorage hydration on mount — legitimate effect-driven setState since
+  // localStorage is unavailable on the server and we accept the small
+  // re-render. useSyncExternalStore would be the production refactor.
+  /* eslint-disable react-hooks/set-state-in-effect */
   useEffect(() => {
     try {
       const raw = localStorage.getItem("chekku:onboarding:area");
@@ -28,6 +32,7 @@ export default function AreaPage() {
       }
     } catch {}
   }, []);
+  /* eslint-enable react-hooks/set-state-in-effect */
 
   const matches = useMemo(() => {
     if (!query || picked) return [];

@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useAppState } from "@/lib/state/AppStateProvider";
@@ -90,6 +90,16 @@ export default function HomePage() {
 // the opportunity, equipment arriving) removes the notification.
 function NotificationsStrip() {
   const { state } = useAppState();
+  // Recency check needs a stable now-snapshot that ticks every 30s so a
+  // recent-win notification disappears at the 5-minute mark even if no
+  // other state changes. Calling Date.now() inline in the memo is impure
+  // and lints as such — this ticker is the React-pure equivalent.
+  const [nowMs, setNowMs] = useState(() => Date.now());
+  useEffect(() => {
+    const id = setInterval(() => setNowMs(Date.now()), 30_000);
+    return () => clearInterval(id);
+  }, []);
+
   const items = useMemo(() => {
     const out: Array<{
       id: string;
@@ -106,10 +116,9 @@ function NotificationsStrip() {
     // Surfaces while wonAt is recent (within 5 minutes) so the trade sees the
     // result of their accept and can navigate straight to it.
     const RECENT_WIN_MS = 5 * 60_000;
-    const now = Date.now();
     const recentWins = state.jobs.filter(
       (j) =>
-        !!j.wonAt && now - new Date(j.wonAt).getTime() <= RECENT_WIN_MS,
+        !!j.wonAt && nowMs - new Date(j.wonAt).getTime() <= RECENT_WIN_MS,
     );
     recentWins.forEach((job) => {
       out.push({
@@ -195,7 +204,7 @@ function NotificationsStrip() {
     }
 
     return out;
-  }, [state.jobs, state.opportunities, state.trade.bankAccount, state.team.members]);
+  }, [state.jobs, state.opportunities, state.trade.bankAccount, state.team.members, nowMs]);
 
   if (items.length === 0) return null;
 
@@ -263,7 +272,7 @@ function PendingResponsesStrip() {
           </p>
           <p className="mt-0.5 text-sm font-medium">
             <span className="font-semibold text-foreground">{pendingCount}</span>{" "}
-            {pendingCount === 1 ? "response" : "responses"} awaiting Circl's
+            {pendingCount === 1 ? "response" : "responses"} awaiting Circl&apos;s
             decision
           </p>
         </div>

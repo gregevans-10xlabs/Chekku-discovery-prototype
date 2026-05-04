@@ -34,22 +34,23 @@ export default function ReschedulePage({
   const { state, dispatch } = useAppState();
   const job = state.jobs.find((j) => j.id === id);
 
-  if (!job || job.client === "Harvey Norman" || job.status !== "Confirmed") {
-    router.replace(`/jobs/${id}`);
-    return null;
-  }
+  // Stable per-mount — avoids re-running useMemo on every render.
+  const today = useMemo(() => new Date(), []);
+  const jobDate = job ? dateForOffset(job.dateOffsetDays) : today;
+  const initialMonthOffset = job
+    ? (jobDate.getFullYear() - today.getFullYear()) * 12 +
+      (jobDate.getMonth() - today.getMonth())
+    : 0;
 
-  const today = new Date();
-  const jobDate = dateForOffset(job.dateOffsetDays);
-  const initialMonthOffset =
-    (jobDate.getFullYear() - today.getFullYear()) * 12 +
-    (jobDate.getMonth() - today.getMonth());
-
+  // All hooks must be called in the same order on every render — see
+  // react-hooks/rules-of-hooks. Early-return for invalid job comes after.
   const [monthOffset, setMonthOffset] = useState(initialMonthOffset);
   const [selectedOffset, setSelectedOffset] = useState<number>(
-    job.dateOffsetDays,
+    job?.dateOffsetDays ?? 0,
   );
-  const [timeOfDay, setTimeOfDay] = useState<TimeOfDay>(job.timeOfDay);
+  const [timeOfDay, setTimeOfDay] = useState<TimeOfDay>(
+    job?.timeOfDay ?? "Morning",
+  );
   const [reason, setReason] = useState("");
   const [note, setNote] = useState("");
 
@@ -57,6 +58,24 @@ export default function ReschedulePage({
     () => new Date(today.getFullYear(), today.getMonth() + monthOffset, 1),
     [today, monthOffset],
   );
+
+  // Count jobs per day across the trade's calendar — excluding this one.
+  const densityByKey = useMemo(() => {
+    const map = new Map<string, number>();
+    state.jobs.forEach((j) => {
+      if (j.id === job?.id) return;
+      const d = dateForOffset(j.dateOffsetDays);
+      const key = `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
+      map.set(key, (map.get(key) ?? 0) + 1);
+    });
+    return map;
+  }, [state.jobs, job?.id]);
+
+  if (!job || job.client === "Harvey Norman" || job.status !== "Confirmed") {
+    router.replace(`/jobs/${id}`);
+    return null;
+  }
+
   const monthLabel = month.toLocaleDateString("en-AU", {
     month: "long",
     year: "numeric",
@@ -74,18 +93,6 @@ export default function ReschedulePage({
   for (let d = 1; d <= daysInMonth; d++) {
     cells.push(new Date(month.getFullYear(), month.getMonth(), d));
   }
-
-  // Count jobs per day across the trade's calendar — excluding this one.
-  const densityByKey = useMemo(() => {
-    const map = new Map<string, number>();
-    state.jobs.forEach((j) => {
-      if (j.id === job.id) return;
-      const d = dateForOffset(j.dateOffsetDays);
-      const key = `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
-      map.set(key, (map.get(key) ?? 0) + 1);
-    });
-    return map;
-  }, [state.jobs, job.id]);
 
   const todayKey = `${today.getFullYear()}-${today.getMonth()}-${today.getDate()}`;
   const originalKey = `${jobDate.getFullYear()}-${jobDate.getMonth()}-${jobDate.getDate()}`;

@@ -96,6 +96,9 @@ export function PhotoCapture({
 
       {value ? (
         <div className="mt-2 overflow-hidden rounded-xl border border-border">
+          {/* next/image doesn't add value for runtime-captured base64 data
+              URLs — bypass the @next/next/no-img-element rule deliberately. */}
+          {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={value.dataUrl}
             alt={label}

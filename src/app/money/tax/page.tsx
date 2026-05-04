@@ -44,7 +44,7 @@ export default function TaxSettingsPage() {
         <div className="rounded-2xl border border-border bg-surface p-4">
           <p className="text-xs text-muted">
             Used by Circl to generate your RCTIs correctly. Get this wrong
-            and your invoices won't match what the ATO expects.
+            and your invoices won&apos;t match what the ATO expects.
           </p>
         </div>
 
@@ -74,7 +74,7 @@ export default function TaxSettingsPage() {
               {gstRegistered ? "✓" : ""}
             </div>
             <div>
-              <p className="text-[14px] font-semibold">I'm GST registered</p>
+              <p className="text-[14px] font-semibold">I&apos;m GST registered</p>
               <p className="mt-1 text-[12px] text-muted">
                 You earn $75,000+ in a 12-month period (or chose to register
                 voluntarily). RCTIs include 10% GST and you remit GST to the
@@ -103,10 +103,10 @@ export default function TaxSettingsPage() {
               {!gstRegistered ? "✓" : ""}
             </div>
             <div>
-              <p className="text-[14px] font-semibold">I'm not GST registered</p>
+              <p className="text-[14px] font-semibold">I&apos;m not GST registered</p>
               <p className="mt-1 text-[12px] text-muted">
                 You earn under the $75,000 threshold. RCTIs are issued
-                without GST and you don't remit GST.
+                without GST and you don&apos;t remit GST.
               </p>
             </div>
           </button>

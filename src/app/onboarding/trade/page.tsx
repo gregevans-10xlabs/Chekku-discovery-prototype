@@ -10,12 +10,17 @@ export default function TradePage() {
   const router = useRouter();
   const [selected, setSelected] = useState<string[]>([]);
 
+  // localStorage hydration on mount — legitimate effect-driven setState
+  // since localStorage is unavailable on the server. See onboarding/area
+  // for the production refactor note.
+  /* eslint-disable react-hooks/set-state-in-effect */
   useEffect(() => {
     try {
       const raw = localStorage.getItem("chekku:onboarding:trades");
       if (raw) setSelected(JSON.parse(raw));
     } catch {}
   }, []);
+  /* eslint-enable react-hooks/set-state-in-effect */
 
   const toggle = (label: string) => {
     setSelected((s) =>

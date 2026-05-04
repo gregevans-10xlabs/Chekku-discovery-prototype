@@ -14,6 +14,10 @@ export function useFormState<T extends object>(
   const [value, setValue] = useState<T>(initial);
   const [hydrated, setHydrated] = useState(false);
 
+  // localStorage hydration on mount — legitimate effect-driven setState
+  // since localStorage is unavailable on the server and the offline-first
+  // spec requires we restore form state after app restart.
+  /* eslint-disable react-hooks/set-state-in-effect */
   useEffect(() => {
     try {
       const raw = localStorage.getItem(storageKey);
@@ -24,6 +28,7 @@ export function useFormState<T extends object>(
     setHydrated(true);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [storageKey]);
+  /* eslint-enable react-hooks/set-state-in-effect */
 
   useEffect(() => {
     if (!hydrated) return;
@@ -54,12 +59,15 @@ export function useStepState(key: string, initial = 0) {
   const storageKey = `chekku:step:${key}`;
   const [step, setStep] = useState<number>(initial);
 
+  // localStorage hydration on mount — legitimate effect-driven setState.
+  /* eslint-disable react-hooks/set-state-in-effect */
   useEffect(() => {
     try {
       const raw = localStorage.getItem(storageKey);
       if (raw !== null) setStep(parseInt(raw, 10) || 0);
     } catch {}
   }, [storageKey]);
+  /* eslint-enable react-hooks/set-state-in-effect */
 
   useEffect(() => {
     try {

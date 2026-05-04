@@ -24,6 +24,10 @@ export default function ReadyPage() {
     radius: 50,
   });
 
+  // localStorage hydration on mount — legitimate effect-driven setState
+  // since localStorage is unavailable on the server. See onboarding/area
+  // for the production refactor note.
+  /* eslint-disable react-hooks/set-state-in-effect */
   useEffect(() => {
     try {
       const name = localStorage.getItem("chekku:onboarding:name") ?? "";
@@ -34,6 +38,7 @@ export default function ReadyPage() {
       setSummary({ name, trades, area: picked, radius });
     } catch {}
   }, []);
+  /* eslint-enable react-hooks/set-state-in-effect */
 
   const firstName = summary.name.split(/\s+/)[0] || "there";
 

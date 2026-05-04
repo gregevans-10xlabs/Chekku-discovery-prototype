@@ -63,7 +63,7 @@ export default function TeamSettingsPage() {
         <p className="text-[11px] leading-5 text-muted-strong">
           Each team member uses their own Chekku login and manages their own
           compliance. As primary contractor you see status and evidence on
-          work you've assigned — not their earnings from other principals.
+          work you&apos;ve assigned — not their earnings from other principals.
         </p>
       </section>
     </main>

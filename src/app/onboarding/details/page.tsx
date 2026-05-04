@@ -14,6 +14,10 @@ export default function DetailsPage() {
   const nameValid = name.trim().split(/\s+/).length >= 2;
   const canContinue = abnValid && nameValid;
 
+  // localStorage hydration on mount — legitimate effect-driven setState
+  // since localStorage is unavailable on the server. See onboarding/area for
+  // the production refactor note.
+  /* eslint-disable react-hooks/set-state-in-effect */
   useEffect(() => {
     try {
       const n = localStorage.getItem("chekku:onboarding:name");
@@ -22,6 +26,7 @@ export default function DetailsPage() {
       if (a) setAbn(a);
     } catch {}
   }, []);
+  /* eslint-enable react-hooks/set-state-in-effect */
 
   const submit = () => {
     if (!canContinue) return;

@@ -4,7 +4,6 @@ import { use } from "react";
 import { useRouter } from "next/navigation";
 import { useAppState } from "@/lib/state/AppStateProvider";
 import { PageHeader } from "@/components/ui/PageHeader";
-import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { getLibraryItem } from "@/lib/demo-data";
 
@@ -67,7 +66,7 @@ export default function LibraryItemPage({
       {/* What's included */}
       <section className="mt-5 px-5">
         <h2 className="mb-2 text-xs font-semibold uppercase tracking-wider text-muted">
-          What's included
+          What&apos;s included
         </h2>
         <div className="rounded-2xl border border-border bg-surface p-4">
           <ul className="space-y-1.5 text-[13px]">

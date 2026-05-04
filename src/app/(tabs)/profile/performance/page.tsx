@@ -63,7 +63,7 @@ export default function PerformancePage() {
           </div>
           <div className="mt-2 flex items-center justify-between">
             <span className="font-semibold">Silver</span>
-            <Badge tone="accent">You're here</Badge>
+            <Badge tone="accent">You&apos;re here</Badge>
           </div>
           <div className="mt-2 flex items-center justify-between">
             <span className="font-semibold">Platinum</span>

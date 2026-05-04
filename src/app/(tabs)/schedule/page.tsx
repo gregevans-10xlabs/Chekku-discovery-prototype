@@ -199,7 +199,8 @@ function JobListRow({ job }: { job: Job }) {
 }
 
 function CalendarView({ jobs }: { jobs: Job[] }) {
-  const today = new Date();
+  // Stable per-mount — avoids re-bucketing the calendar on every render.
+  const today = useMemo(() => new Date(), []);
   const todayKey = dateKey(today);
   const [monthOffset, setMonthOffset] = useState(0);
   const [selectedKey, setSelectedKey] = useState<string | null>(null);
