@@ -11,9 +11,11 @@ import {
 import { getJobs, getOpportunities, getPastOpportunities, JAKE } from "@/lib/demo-data";
 import type {
   AttendanceConfirmation,
+  BankAccount,
   Job,
   JobRescheduleEvent,
   Opportunity,
+  PaymentMethod,
   TimeOfDay,
   Trade,
 } from "@/lib/types";
@@ -48,6 +50,8 @@ type Action =
   | { type: "enable-team" }
   | { type: "delegate-job"; jobId: string; memberId: string }
   | { type: "unassign-job"; jobId: string }
+  | { type: "set-bank-account"; bankAccount: BankAccount }
+  | { type: "set-payment-method"; paymentMethod: PaymentMethod }
   | {
       type: "reschedule-job";
       jobId: string;
@@ -200,6 +204,16 @@ function reducer(state: PersistedState, action: Action): PersistedState {
           const { assignedToMemberId: _, ...rest } = j;
           return rest;
         }),
+      };
+    case "set-bank-account":
+      return {
+        ...state,
+        trade: { ...state.trade, bankAccount: action.bankAccount },
+      };
+    case "set-payment-method":
+      return {
+        ...state,
+        trade: { ...state.trade, paymentMethod: action.paymentMethod },
       };
     case "reschedule-job": {
       const job = state.jobs.find((j) => j.id === action.jobId);

@@ -111,6 +111,16 @@ export const JAKE: Trade = {
   onTimeRate: 0.82,
   completionRate: 0.96,
   reschedulePeerPercentile: "Below 40% of area peers",
+  bankAccount: {
+    accountName: "Jake Mitchell Trade",
+    bsb: "062-001",
+    accountNumber: "12345678",
+  },
+  paymentMethod: {
+    brand: "Visa",
+    last4: "4321",
+    expiry: "08/28",
+  },
 };
 
 // ---------- Compliance ----------
@@ -434,6 +444,7 @@ export function getJobs(): Job[] {
         { name: "Working at Heights", verified: true },
         { name: "White Card", verified: true },
       ],
+      rctiNumber: "RCTI-26-04582",
     },
     {
       id: "CG48295",
@@ -465,6 +476,7 @@ export function getJobs(): Job[] {
         { name: "Electrical Contractor Licence", verified: true },
         { name: "Working at Heights", verified: true },
       ],
+      rctiNumber: "RCTI-26-04561",
     },
     {
       id: "CG48201",
@@ -496,6 +508,7 @@ export function getJobs(): Job[] {
         { name: "Electrical Contractor Licence", verified: true },
         { name: "Working at Heights", verified: true },
       ],
+      rctiNumber: "RCTI-26-04528",
     },
     {
       id: "CG48133",
@@ -531,6 +544,7 @@ export function getJobs(): Job[] {
         { name: "Working at Heights", verified: true },
         { name: "White Card", verified: true },
       ],
+      rctiNumber: "RCTI-26-04492",
     },
     {
       id: "CG48081",
@@ -566,6 +580,7 @@ export function getJobs(): Job[] {
         { name: "Working at Heights", verified: true },
         { name: "White Card", verified: true },
       ],
+      rctiNumber: "RCTI-26-04461",
     },
     {
       id: "CG48050",
@@ -597,6 +612,7 @@ export function getJobs(): Job[] {
         { name: "Electrical Contractor Licence", verified: true },
         { name: "Working at Heights", verified: true },
       ],
+      rctiNumber: "RCTI-26-04440",
     },
     // ---- TOMORROW (3 jobs) ----
     {

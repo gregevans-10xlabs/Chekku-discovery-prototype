@@ -130,8 +130,31 @@ function NotificationsStrip() {
       });
     }
 
+    // Action required on payment: a job that needs the trade's attention to
+    // release payment. Common cause: no bank account on file at Job Complete.
+    const actionJob = state.jobs.find(
+      (j) => j.paymentStatus === "Action Required",
+    );
+    if (actionJob) {
+      const noBank = !state.trade.bankAccount;
+      out.push({
+        id: `action-${actionJob.id}`,
+        tone: "warn",
+        icon: "💸",
+        label: "Payment needs your attention",
+        title: actionJob.rctiNumber
+          ? `RCTI ${actionJob.rctiNumber}`
+          : actionJob.cgNumber,
+        body: noBank
+          ? "Add your bank account so this RCTI can be settled."
+          : "Your RCTI needs your attention before payment can be released.",
+        href: noBank ? "/money/bank" : `/money/rcti/${actionJob.id}`,
+        cta: noBank ? "Add bank account" : "View RCTI",
+      });
+    }
+
     return out;
-  }, [state.jobs, state.opportunities]);
+  }, [state.jobs, state.opportunities, state.trade.bankAccount]);
 
   if (items.length === 0) return null;
 

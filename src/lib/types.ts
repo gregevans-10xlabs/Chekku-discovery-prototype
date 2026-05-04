@@ -103,6 +103,10 @@ export interface Job {
   // Optional team-member assignment for primary contractors with subs/employees.
   // When unset, the job is the primary contractor's own.
   assignedToMemberId?: string;
+  // RCTI metadata — populated once Job Complete fires (paymentStatus moves to
+  // RCTI Generated or beyond). settlementDate is set when paymentStatus reaches Settled.
+  rctiNumber?: string;
+  settlementDate?: string;
 }
 
 export interface OpportunityResponse {
@@ -128,6 +132,18 @@ export interface Opportunity {
   responded?: OpportunityResponse;
 }
 
+export interface BankAccount {
+  accountName: string;
+  bsb: string;
+  accountNumber: string;
+}
+
+export interface PaymentMethod {
+  brand: "Visa" | "Mastercard" | "Amex";
+  last4: string;
+  expiry: string;
+}
+
 export interface Trade {
   fullName: string;
   firstName: string;
@@ -146,6 +162,8 @@ export interface Trade {
   onTimeRate: number;
   completionRate: number;
   reschedulePeerPercentile: string;
+  bankAccount?: BankAccount;
+  paymentMethod?: PaymentMethod;
 }
 
 export interface Team {
