@@ -101,13 +101,16 @@ function NotificationsStrip() {
           j.equipmentDeliveryStatus === "Delayed"),
     );
     if (jeopardyJob) {
+      const trackingDetail = jeopardyJob.tracking
+        ? ` ${jeopardyJob.tracking.carrier} ${jeopardyJob.tracking.number} is still in transit.`
+        : "";
       out.push({
         id: `jeopardy-${jeopardyJob.id}`,
         tone: "warn",
         icon: "⚠️",
         label: "Equipment not delivered",
         title: `Tomorrow's ${jeopardyJob.customer.suburb} job`,
-        body: `${jeopardyJob.type} at ${jeopardyJob.startTime} — equipment hasn't arrived. Tap to contact Circl Support.`,
+        body: `${jeopardyJob.type} at ${jeopardyJob.startTime}.${trackingDetail} Tap to track or contact Circl Support.`,
         href: `/jobs/${jeopardyJob.id}`,
         cta: "View job",
       });
@@ -396,6 +399,21 @@ function JobCardMorning({
           </div>
         )}
       </div>
+
+      {job.tracking &&
+      (job.equipmentDeliveryStatus === "Not Yet Received" ||
+        job.equipmentDeliveryStatus === "Delayed" ||
+        job.equipmentDeliveryStatus === "Expected Today") ? (
+        <a
+          href={job.tracking.url}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="mt-3 -mx-4 -mb-4 flex items-center justify-between border-t border-warn/30 bg-warn-soft/50 px-4 py-2.5 text-[12px] font-semibold text-warn"
+        >
+          <span>📦 Track {job.tracking.carrier} · {job.tracking.number}</span>
+          <span>→</span>
+        </a>
+      ) : null}
     </div>
   );
 }

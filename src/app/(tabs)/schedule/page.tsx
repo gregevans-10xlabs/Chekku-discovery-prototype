@@ -129,52 +129,67 @@ function SectionGroup({ section }: { section: ScheduleSection }) {
 }
 
 function JobListRow({ job }: { job: Job }) {
+  const showTracking =
+    !!job.tracking &&
+    (job.equipmentDeliveryStatus === "Not Yet Received" ||
+      job.equipmentDeliveryStatus === "Delayed" ||
+      job.equipmentDeliveryStatus === "Expected Today");
   return (
-    <Link
-      href={`/jobs/${job.id}`}
-      className="block rounded-2xl border border-border bg-surface p-4"
-    >
-      <div className="flex items-start justify-between gap-3">
-        <div className="min-w-0">
-          <div className="flex items-center gap-2">
-            <Badge tone="neutral">
-              {relativeDayLabel(job.dateOffsetDays)} · {job.startTime}
-            </Badge>
-            {job.status === "Completed" ? (
-              <Badge tone="success">Completed</Badge>
-            ) : job.status === "InProgress" ? (
-              <Badge tone="accent">In progress</Badge>
+    <div className="overflow-hidden rounded-2xl border border-border bg-surface">
+      <Link href={`/jobs/${job.id}`} className="block p-4">
+        <div className="flex items-start justify-between gap-3">
+          <div className="min-w-0">
+            <div className="flex items-center gap-2">
+              <Badge tone="neutral">
+                {relativeDayLabel(job.dateOffsetDays)} · {job.startTime}
+              </Badge>
+              {job.status === "Completed" ? (
+                <Badge tone="success">Completed</Badge>
+              ) : job.status === "InProgress" ? (
+                <Badge tone="accent">In progress</Badge>
+              ) : null}
+            </div>
+            <h3 className="mt-2 text-[15px] font-semibold">{job.type}</h3>
+            <p className="mt-0.5 text-xs text-muted">
+              {job.client} · {job.customer.suburb} · {job.cgNumber}
+            </p>
+          </div>
+          <div className="text-right">
+            <p className="text-lg font-bold text-accent">
+              ${job.value.toFixed(2)}
+            </p>
+            {job.equipmentDeliveryStatus === "Not Yet Received" ||
+            job.equipmentDeliveryStatus === "Delayed" ? (
+              <Badge tone={job.dateOffsetDays <= 1 ? "warn" : "neutral"}>
+                ⚠ Delivery pending
+              </Badge>
+            ) : job.pickupLocation ? (
+              <Badge tone="info">Pickup</Badge>
             ) : null}
           </div>
-          <h3 className="mt-2 text-[15px] font-semibold">{job.type}</h3>
-          <p className="mt-0.5 text-xs text-muted">
-            {job.client} · {job.customer.suburb} · {job.cgNumber}
-          </p>
         </div>
-        <div className="text-right">
-          <p className="text-lg font-bold text-accent">
-            ${job.value.toFixed(2)}
-          </p>
-          {job.equipmentDeliveryStatus === "Not Yet Received" ||
-          job.equipmentDeliveryStatus === "Delayed" ? (
-            <Badge tone={job.dateOffsetDays <= 1 ? "warn" : "neutral"}>
-              ⚠ Delivery pending
-            </Badge>
-          ) : job.pickupLocation ? (
-            <Badge tone="info">Pickup</Badge>
-          ) : null}
-        </div>
-      </div>
 
-      {job.paymentStatus && job.paymentStatus !== "Not Applicable" ? (
-        <div className="mt-3 flex items-center justify-between border-t border-border pt-3 text-xs text-muted">
-          <span>Payment</span>
-          <span className="font-medium text-foreground">
-            {job.paymentStatus}
-          </span>
-        </div>
+        {job.paymentStatus && job.paymentStatus !== "Not Applicable" ? (
+          <div className="mt-3 flex items-center justify-between border-t border-border pt-3 text-xs text-muted">
+            <span>Payment</span>
+            <span className="font-medium text-foreground">
+              {job.paymentStatus}
+            </span>
+          </div>
+        ) : null}
+      </Link>
+      {showTracking && job.tracking ? (
+        <a
+          href={job.tracking.url}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex items-center justify-between border-t border-warn/30 bg-warn-soft/50 px-4 py-2.5 text-[12px] font-semibold text-warn"
+        >
+          <span>📦 Track {job.tracking.carrier} · {job.tracking.number}</span>
+          <span>→</span>
+        </a>
       ) : null}
-    </Link>
+    </div>
   );
 }
 

@@ -52,6 +52,12 @@ export type PaymentStatus =
 
 export type AttendanceConfirmation = "Confirmed" | "Unable" | "Pending";
 
+export interface EquipmentTracking {
+  carrier: string;
+  number: string;
+  url: string;
+}
+
 export type TimeOfDay = "Morning" | "Afternoon" | "Evening";
 
 export interface JobRescheduleEvent {
@@ -94,6 +100,7 @@ export interface Job {
     address: string;
   };
   equipmentDeliveryStatus: EquipmentDeliveryStatus;
+  tracking?: EquipmentTracking;
   status: JobStatus;
   paymentStatus: PaymentStatus;
   attendance: AttendanceConfirmation;

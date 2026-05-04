@@ -65,15 +65,72 @@ export default function JobDetail({
           {jobDone ? <Badge tone="success">Completed</Badge> : null}
           {checkedIn && !jobDone ? <Badge tone="accent">In progress</Badge> : null}
           {!checkedIn && !jobDone ? <Badge tone="neutral">Confirmed</Badge> : null}
-          {job.equipmentDeliveryStatus === "Delivered" ? (
-            <Badge tone="success">Equipment delivered</Badge>
-          ) : job.equipmentDeliveryStatus === "Not Yet Received" ? (
-            <Badge tone="warn">Equipment pending</Badge>
-          ) : job.equipmentDeliveryStatus === "Delayed" ? (
-            <Badge tone="danger">Delivery delayed</Badge>
-          ) : null}
         </div>
       </section>
+
+      {/* Equipment status + tracking (only for jobs where equipment ships) */}
+      {job.equipmentDeliveryStatus !== "N/A" ? (
+        <section className="mt-3 px-4">
+          <div
+            className={
+              "rounded-2xl border p-4 " +
+              (job.equipmentDeliveryStatus === "Delivered"
+                ? "border-success/30 bg-success/10"
+                : job.equipmentDeliveryStatus === "Delayed"
+                  ? "border-danger/40 bg-danger/10"
+                  : "border-warn/40 bg-warn-soft")
+            }
+          >
+            <div className="flex items-baseline justify-between gap-3">
+              <p
+                className={
+                  "text-[11px] font-semibold uppercase tracking-wider " +
+                  (job.equipmentDeliveryStatus === "Delivered"
+                    ? "text-success"
+                    : job.equipmentDeliveryStatus === "Delayed"
+                      ? "text-danger"
+                      : "text-warn")
+                }
+              >
+                {job.equipmentDeliveryStatus === "Delivered"
+                  ? "Equipment delivered"
+                  : job.equipmentDeliveryStatus === "Not Yet Received"
+                    ? "Equipment not yet received"
+                    : job.equipmentDeliveryStatus === "Delayed"
+                      ? "Delivery delayed"
+                      : "Expected today"}
+              </p>
+              {job.equipmentDeliveryStatus !== "Delivered" ? (
+                <span className="text-[10px] font-medium text-muted-strong">
+                  Action may be required
+                </span>
+              ) : null}
+            </div>
+            {job.tracking ? (
+              <>
+                <p className="mt-1 text-[14px] font-semibold">
+                  {job.tracking.carrier} · {job.tracking.number}
+                </p>
+                <a
+                  href={job.tracking.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="mt-2 inline-flex items-center gap-1 text-[12px] font-semibold text-accent"
+                >
+                  📦 Track delivery →
+                </a>
+              </>
+            ) : null}
+            {job.equipmentDeliveryStatus !== "Delivered" ? (
+              <p className="mt-2 text-[12px] text-foreground/80">
+                If equipment hasn’t arrived by your job time, contact{" "}
+                <span className="font-semibold">Circl Support</span> from the
+                customer card below.
+              </p>
+            ) : null}
+          </div>
+        </section>
+      ) : null}
 
       {/* Attendance prompt — surfaces when the trade hasn't yet confirmed */}
       {!jobDone && job.attendance === "Pending" ? (
