@@ -1141,6 +1141,177 @@ export function getTeam(): Team {
   };
 }
 
+// ---------- Document library / store ----------
+// Templates and packs the trade can buy individually or get free with a paid
+// subscription. Per Aaron's positioning ("they come for the jobs, they stay
+// for the other stuff") this is the second half of the value prop —
+// operationally necessary documents (SWMS) plus business forms.
+
+export type LibraryCategory =
+  | "SWMS Templates"
+  | "Business & Customer Forms"
+  | "Compliance Kits";
+
+export interface LibraryItem {
+  id: string;
+  name: string;
+  category: LibraryCategory;
+  shortDescription: string;
+  longDescription: string;
+  includes: string[];
+  format: "PDF" | "DOCX bundle" | "PDF bundle";
+  pages: number;
+  priceCents: number; // shown in dollars
+  // Was the document recently updated? Influences "Updated X" copy.
+  updatedDaysAgo: number;
+  // Auto-fills with the trade's business details when bought.
+  autoFilled: boolean;
+}
+
+const LIBRARY_ITEMS: LibraryItem[] = [
+  {
+    id: "swms-starlink-roof",
+    name: "SWMS — Starlink Roof Installation",
+    category: "SWMS Templates",
+    shortDescription:
+      "Safe Work Method Statement covering single-story roof-mounted Starlink installs.",
+    longDescription:
+      "Pre-filled SWMS specific to roof-mounted Starlink residential installations. Covers ladder access, working at height controls, electrical isolation, weather hold criteria, and customer property protection. Updated to reference WorkSafe NSW Code of Practice 2024.",
+    includes: [
+      "Hazard register (12 pre-identified hazards)",
+      "Risk control measures with PPE checklist",
+      "Pre-start checklist for the team member on site",
+      "Sign-off page with witness fields",
+      "Auto-fills your ABN, business name, and trade details",
+    ],
+    format: "PDF",
+    pages: 8,
+    priceCents: 5900,
+    updatedDaysAgo: 14,
+    autoFilled: true,
+  },
+  {
+    id: "swms-tvav-wall-mount",
+    name: "SWMS — TV / AV Wall Mount Installation",
+    category: "SWMS Templates",
+    shortDescription:
+      "Safe Work Method Statement for TV wall mount + soundbar installations.",
+    longDescription:
+      "Pre-filled SWMS covering 55″–86″ wall-mounted TV and soundbar installations across plasterboard, brick, and concealment scenarios. Includes load-bearing assessment guidance and electrical safety checks for connected AV equipment.",
+    includes: [
+      "Wall-type assessment guide",
+      "Mounting hardware specification matrix",
+      "Cable management & concealment hazards",
+      "Customer-present worksite controls",
+      "Auto-fills your ABN, business name, and trade details",
+    ],
+    format: "PDF",
+    pages: 6,
+    priceCents: 5900,
+    updatedDaysAgo: 22,
+    autoFilled: true,
+  },
+  {
+    id: "swms-working-heights",
+    name: "SWMS — Working at Heights (General)",
+    category: "SWMS Templates",
+    shortDescription:
+      "Generic working-at-heights SWMS, suitable for most trade-type variants.",
+    longDescription:
+      "General-purpose Working at Heights SWMS, suitable for use as a base template that you can specialise per job type. Covers fall arrest equipment, ladder safety, scaffolding selection, and emergency procedures.",
+    includes: [
+      "Equipment inspection checklist",
+      "Ladder vs scaffolding selection matrix",
+      "Fall arrest system options",
+      "Rescue plan template",
+      "Auto-fills your ABN, business name, and trade details",
+    ],
+    format: "PDF",
+    pages: 10,
+    priceCents: 5900,
+    updatedDaysAgo: 7,
+    autoFilled: true,
+  },
+  {
+    id: "business-sole-trader-essentials",
+    name: "Sole Trader Essentials Pack",
+    category: "Business & Customer Forms",
+    shortDescription:
+      "14-template bundle covering everything a new sole trader needs.",
+    longDescription:
+      "The full set of admin templates a sole trader needs: contractor agreement, customer terms & conditions, service charter, payment terms, dispute resolution, customer privacy notice, materials variation form, and more. All Australian-law-aligned and reviewed by Sparke Helmore.",
+    includes: [
+      "Contractor agreement template (3 versions)",
+      "Customer T&Cs & service charter",
+      "Payment terms & late-payment notice",
+      "Dispute resolution flowchart",
+      "Privacy notice (Australian Privacy Act compliant)",
+      "Variation order template",
+      "+ 8 more templates",
+    ],
+    format: "DOCX bundle",
+    pages: 42,
+    priceCents: 8900,
+    updatedDaysAgo: 35,
+    autoFilled: true,
+  },
+  {
+    id: "customer-service-charter",
+    name: "Customer Service Charter",
+    category: "Business & Customer Forms",
+    shortDescription:
+      "Single-page service charter to leave with customers on the day.",
+    longDescription:
+      "A single-page customer-facing document covering what the customer can expect from the install: arrival window, scope, cleanup standard, warranty, and how to raise issues. Pre-filled with your business contact details.",
+    includes: [
+      "Service standards (arrival, communication, cleanup)",
+      "Warranty terms",
+      "Issue resolution contact",
+      "Auto-fills your business name, ABN, phone, email",
+    ],
+    format: "DOCX bundle",
+    pages: 2,
+    priceCents: 2900,
+    updatedDaysAgo: 60,
+    autoFilled: true,
+  },
+  {
+    id: "compliance-hn-induction",
+    name: "Harvey Norman Inductee Kit",
+    category: "Compliance Kits",
+    shortDescription:
+      "Pre-induction reading & checklist for the Harvey Norman installer LMS.",
+    longDescription:
+      "Pre-reading and reference kit that pairs with the Harvey Norman online LMS induction. Has the 22-question reference index, the picking ticket walkthrough, the Customer Goods Receipt protocol, and the post-install evidence requirements. Doesn't replace the LMS — it makes it faster.",
+    includes: [
+      "22-question reference index",
+      "Picking ticket walkthrough",
+      "Customer Goods Receipt protocol",
+      "Post-install evidence checklist",
+      "Cross-reference to the live LMS course",
+    ],
+    format: "PDF bundle",
+    pages: 22,
+    priceCents: 7900,
+    updatedDaysAgo: 5,
+    autoFilled: false,
+  },
+];
+
+export function getLibraryItems(): LibraryItem[] {
+  return LIBRARY_ITEMS;
+}
+
+export function getLibraryItem(id: string): LibraryItem | undefined {
+  return LIBRARY_ITEMS.find((i) => i.id === id);
+}
+
+export const LIBRARY_CATEGORIES: LibraryCategory[] = [
+  "SWMS Templates",
+  "Business & Customer Forms",
+  "Compliance Kits",
+];
+
 // ---------- Notifications ----------
 export interface NotificationItem {
   id: string;

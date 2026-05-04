@@ -183,6 +183,18 @@ export default function SacPage({
             hint="Required — a trade without a SWMS cannot start the job."
           />
 
+          {!data.swmsPhoto ? (
+            <a
+              href="/profile/library"
+              className="block rounded-xl border border-info/30 bg-info/10 p-3 text-[12px] text-foreground/90"
+            >
+              <span className="font-semibold text-info">
+                Don&apos;t have a SWMS for this job?
+              </span>{" "}
+              Get a pre-filled template from the Document library →
+            </a>
+          ) : null}
+
           <Toggle
             label="I have reviewed the scope of work against my SWMS"
             checked={data.scopeReviewed}

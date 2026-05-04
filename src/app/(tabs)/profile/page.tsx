@@ -5,7 +5,7 @@ import { useMemo } from "react";
 import { useAppState } from "@/lib/state/AppStateProvider";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { Badge } from "@/components/ui/Badge";
-import { getComplianceDocs, getTeam } from "@/lib/demo-data";
+import { getComplianceDocs, getLibraryItems, getTeam } from "@/lib/demo-data";
 
 interface AttentionItem {
   label: string;
@@ -150,6 +150,11 @@ export default function ProfileHub() {
             href="/profile/training"
             label="Training & courses"
             summary="3 recommended for you"
+          />
+          <HubRow
+            href="/profile/library"
+            label="Document library"
+            summary={`${getLibraryItems().length} templates · free with Standard plan`}
           />
           <HubRow
             href="/profile/subscription"
