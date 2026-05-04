@@ -121,6 +121,8 @@ export const JAKE: Trade = {
     last4: "4321",
     expiry: "08/28",
   },
+  gstRegistered: true,
+  tradingName: "Jake Mitchell Trade",
 };
 
 // ---------- Compliance ----------

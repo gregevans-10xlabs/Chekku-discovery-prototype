@@ -138,9 +138,19 @@ export default function MoneyPage() {
 
       {/* Recent settlements */}
       <section className="mt-6 px-5">
-        <h2 className="mb-2 text-xs font-semibold uppercase tracking-wider text-muted">
-          Recent settlements
-        </h2>
+        <div className="mb-2 flex items-baseline justify-between">
+          <h2 className="text-xs font-semibold uppercase tracking-wider text-muted">
+            Recent settlements
+          </h2>
+          {settlements.length > 0 ? (
+            <Link
+              href="/money/rctis"
+              className="text-[11px] font-medium text-accent"
+            >
+              View all RCTIs →
+            </Link>
+          ) : null}
+        </div>
         <div className="space-y-2">
           {settlements.length === 0 ? (
             <p className="rounded-2xl border border-border bg-surface p-4 text-sm text-muted">
@@ -148,9 +158,30 @@ export default function MoneyPage() {
               you complete work.
             </p>
           ) : (
-            settlements.map((j) => <SettlementRow key={j.id} job={j} />)
+            settlements.slice(0, 5).map((j) => (
+              <SettlementRow key={j.id} job={j} />
+            ))
           )}
         </div>
+      </section>
+
+      {/* Tax & business name */}
+      <section className="mt-6 px-5">
+        <h2 className="mb-2 text-xs font-semibold uppercase tracking-wider text-muted">
+          Tax &amp; business name
+        </h2>
+        <Link
+          href="/money/tax"
+          className="block rounded-2xl border border-border bg-surface p-4"
+        >
+          <p className="text-[15px] font-semibold">
+            {state.trade.gstRegistered ? "GST registered" : "Not GST registered"}
+          </p>
+          <p className="mt-1 text-xs text-muted">
+            Trading as {state.trade.tradingName ?? state.trade.fullName}
+          </p>
+          <p className="mt-2 text-[12px] font-medium text-accent">Edit →</p>
+        </Link>
       </section>
 
       {/* Bank account */}

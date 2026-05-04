@@ -179,6 +179,13 @@ export interface Trade {
   reschedulePeerPercentile: string;
   bankAccount?: BankAccount;
   paymentMethod?: PaymentMethod;
+  // GST registration status. Affects how the RCTI presents the line items —
+  // registered trades get the 10% GST split, under-threshold sole traders
+  // get a single line with no GST and a note. Defaults to true in demo.
+  gstRegistered?: boolean;
+  // Optional override for the business name that appears on the RCTI. When
+  // unset, the trade's legal name is used.
+  tradingName?: string;
 }
 
 export interface Team {

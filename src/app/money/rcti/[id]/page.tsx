@@ -53,9 +53,32 @@ export default function RctiPage({
     job.paymentStatus === "Settled" ? dateForOffset(job.dateOffsetDays + 5) : null;
 
   // RCTI line items: per spec, Circl generates the RCTI on behalf of the trade.
-  // Line item is the job value (GST-exclusive). We surface total inc. GST.
-  const subtotal = job.value / (1 + GST_RATE);
-  const gst = job.value - subtotal;
+  // Line item math depends on the trade's GST registration status. Registered
+  // trades show subtotal + 10% GST + total (current Australian sole-trader
+  // pattern); under-threshold trades show a single line with no GST and a
+  // note that explains why.
+  const gstRegistered = state.trade.gstRegistered ?? true;
+  const subtotal = gstRegistered ? job.value / (1 + GST_RATE) : job.value;
+  const gst = gstRegistered ? job.value - subtotal : 0;
+  const recipientName = state.trade.tradingName ?? state.trade.fullName;
+
+  const handleShare = async () => {
+    const shareData = {
+      title: `RCTI ${job.rctiNumber}`,
+      text: `${job.type} · $${job.value.toFixed(2)} · ${job.customer.suburb}`,
+      url: window.location.href,
+    };
+    if (typeof navigator !== "undefined" && navigator.share) {
+      try {
+        await navigator.share(shareData);
+      } catch {
+        // User cancelled or browser declined — fall back to print.
+        window.print();
+      }
+    } else {
+      window.print();
+    }
+  };
 
   return (
     <main className="pb-8">
@@ -108,7 +131,7 @@ export default function RctiPage({
                 Issued to (recipient of services)
               </p>
               <p className="mt-1 font-semibold text-foreground">
-                {state.trade.fullName}
+                {recipientName}
               </p>
               <p className="mt-0.5 text-muted">ABN {state.trade.abn}</p>
               <p className="mt-0.5 text-muted">
@@ -135,18 +158,33 @@ export default function RctiPage({
 
           <div className="mt-4 border-t border-border pt-4">
             <div className="space-y-1.5 text-[13px]">
-              <div className="flex justify-between">
-                <span className="text-muted">Service fee</span>
-                <span className="font-medium">${subtotal.toFixed(2)}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-muted">GST (10%)</span>
-                <span className="font-medium">${gst.toFixed(2)}</span>
-              </div>
+              {gstRegistered ? (
+                <>
+                  <div className="flex justify-between">
+                    <span className="text-muted">Service fee</span>
+                    <span className="font-medium">${subtotal.toFixed(2)}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-muted">GST (10%)</span>
+                    <span className="font-medium">${gst.toFixed(2)}</span>
+                  </div>
+                </>
+              ) : (
+                <div className="flex justify-between">
+                  <span className="text-muted">Service fee (no GST)</span>
+                  <span className="font-medium">${subtotal.toFixed(2)}</span>
+                </div>
+              )}
               <div className="flex justify-between border-t border-border pt-2 text-[15px] font-bold">
                 <span>Total</span>
                 <span className="text-accent">${job.value.toFixed(2)}</span>
               </div>
+              {!gstRegistered ? (
+                <p className="mt-2 text-[11px] text-muted-strong">
+                  This trade is not registered for GST (under the $75,000
+                  threshold). No GST is collected on this invoice.
+                </p>
+              ) : null}
             </div>
           </div>
 
@@ -180,7 +218,9 @@ export default function RctiPage({
       </section>
 
       <section className="mt-5 px-5">
-        <Button variant="secondary">Save as PDF</Button>
+        <Button variant="secondary" onClick={handleShare}>
+          Share or save
+        </Button>
         <p className="mt-3 text-center text-[11px] text-muted-strong">
           Circl generates this invoice on your behalf under the RCTI agreement.
         </p>

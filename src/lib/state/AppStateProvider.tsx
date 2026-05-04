@@ -58,6 +58,11 @@ type Action =
       serviceArea: { suburb: string; postcode: string; radiusKm: number };
     }
   | { type: "set-trade-types"; tradeTypes: TradeType[] }
+  | {
+      type: "set-tax-settings";
+      gstRegistered: boolean;
+      tradingName?: string;
+    }
   | { type: "promote-awaiting-opportunities" }
   | {
       type: "reschedule-job";
@@ -234,6 +239,15 @@ function reducer(state: PersistedState, action: Action): PersistedState {
       return {
         ...state,
         trade: { ...state.trade, tradeTypes: action.tradeTypes },
+      };
+    case "set-tax-settings":
+      return {
+        ...state,
+        trade: {
+          ...state.trade,
+          gstRegistered: action.gstRegistered,
+          tradingName: action.tradingName,
+        },
       };
     case "promote-awaiting-opportunities": {
       // Simulate Circl's selection decision. Any opportunity the trade has
