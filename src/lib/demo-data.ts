@@ -588,7 +588,10 @@ export function getJobs(): Job[] {
       },
       equipmentDeliveryStatus: "N/A",
       status: "Completed",
-      paymentStatus: "RCTI Generated",
+      // Action Required example for the Money tab demo — customer hasn't
+      // confirmed the post-departure satisfaction prompt, so the RCTI is
+      // held for resolution.
+      paymentStatus: "Action Required",
       attendance: "Confirmed",
       complianceRequired: [
         { name: "Working at Heights", verified: true },

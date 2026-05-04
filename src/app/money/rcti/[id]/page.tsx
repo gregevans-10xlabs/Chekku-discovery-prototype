@@ -219,7 +219,7 @@ export default function RctiPage({
 
       <section className="mt-5 px-5">
         <Button variant="secondary" onClick={handleShare}>
-          Share or save
+          Download PDF
         </Button>
         <p className="mt-3 text-center text-[11px] text-muted-strong">
           Circl generates this invoice on your behalf under the RCTI agreement.
