@@ -31,6 +31,7 @@ function FindJobsInner() {
   const initialTab = searchParams.get("tab") === "history" ? "history" : "available";
   const [tab, setTab] = useState<"available" | "history">(initialTab);
   const [sort, setSort] = useState<SortKey>("distance");
+  const isPaused = state.trade.availability?.status === "paused";
 
   const history = useMemo(() => {
     const past = state.pastOpportunities;
@@ -71,8 +72,41 @@ function FindJobsInner() {
     <main className="pb-6">
       <PageHeader
         title="Find jobs"
-        subtitle={`${available.length} jobs in your area · matched to your trade & compliance`}
+        subtitle={
+          isPaused
+            ? "Paused — new opportunities are not being matched"
+            : `${available.length} jobs in your area · matched to your trade & compliance`
+        }
       />
+
+      {isPaused ? (
+        <section className="px-4 pt-3">
+          <Link
+            href="/profile/availability"
+            className="block rounded-2xl border border-warn/40 bg-warn-soft p-4"
+          >
+            <div className="flex items-start justify-between gap-3">
+              <div className="min-w-0">
+                <p className="text-[11px] font-semibold uppercase tracking-wider text-warn">
+                  ⏸ You&apos;re paused
+                </p>
+                <p className="mt-1 text-[14px] font-semibold">
+                  No new opportunities will appear until you resume
+                  {state.trade.availability?.reason
+                    ? ` · ${state.trade.availability.reason.toLowerCase()}`
+                    : ""}
+                </p>
+                <p className="mt-1 text-[12px] text-foreground/85">
+                  Existing accepted jobs continue as normal.
+                </p>
+              </div>
+              <span className="text-[12px] font-semibold text-warn">
+                Resume →
+              </span>
+            </div>
+          </Link>
+        </section>
+      ) : null}
 
       <div className="sticky top-[60px] z-10 bg-background/95 px-4 pt-2 backdrop-blur">
         <div className="flex rounded-xl bg-surface p-1">

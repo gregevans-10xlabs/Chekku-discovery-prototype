@@ -55,13 +55,30 @@ export default function ProfileHub() {
         href: "/money/bank",
       });
     }
+    if (state.trade.availability?.status === "paused") {
+      const reason = state.trade.availability.reason
+        ? ` (${state.trade.availability.reason.toLowerCase()})`
+        : "";
+      items.push({
+        label: `You're paused — not receiving new jobs${reason}`,
+        href: "/profile/availability",
+      });
+    }
     return items;
-  }, [docs, state.trade.bankAccount]);
+  }, [docs, state.trade.bankAccount, state.trade.availability]);
 
   const subPct = Math.round((sub.allocatedYTD / sub.cap) * 100);
   const teamSummary = state.hasTeam
     ? `${team.members.length} member${team.members.length === 1 ? "" : "s"} configured`
     : "Off · Enable to manage subs / employees";
+
+  const availability = state.trade.availability;
+  const isPaused = availability?.status === "paused";
+  const availabilitySummary = isPaused
+    ? availability?.pausedUntil
+      ? `Paused until tomorrow${availability.reason ? ` · ${availability.reason}` : ""}`
+      : `Paused indefinitely${availability?.reason ? ` · ${availability.reason}` : ""}`
+    : "Available · matching to new jobs";
 
   return (
     <main className="pb-8">
@@ -145,6 +162,12 @@ export default function ProfileHub() {
             href="/profile/performance"
             label="Performance"
             summary={`On-time ${(state.trade.onTimeRate * 100).toFixed(0)}% · ${state.trade.tier} tier`}
+          />
+          <HubRow
+            href="/profile/availability"
+            label="Availability"
+            summary={availabilitySummary}
+            attention={isPaused}
           />
           <HubRow
             href="/profile/training"

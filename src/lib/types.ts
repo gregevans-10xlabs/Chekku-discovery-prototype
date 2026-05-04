@@ -186,6 +186,23 @@ export interface Trade {
   // Optional override for the business name that appears on the RCTI. When
   // unset, the trade's legal name is used.
   tradingName?: string;
+  // Trade availability for new opportunity matching. When paused, the trade
+  // is filtered out of Circl's matcher and stops receiving urgent-pickup
+  // notifications. Existing accepted jobs are unaffected. Defaults to
+  // available.
+  availability?: TradeAvailability;
+}
+
+export interface TradeAvailability {
+  status: "available" | "paused";
+  // Optional reason — surfaced to Circl ops for pattern understanding,
+  // does not affect tier scoring.
+  reason?: string;
+  // ISO timestamp of when the pause was set; null when available.
+  pausedAt?: string;
+  // ISO date for when the pause auto-resumes; undefined = indefinite (the
+  // trade resumes manually).
+  pausedUntil?: string;
 }
 
 export interface Team {

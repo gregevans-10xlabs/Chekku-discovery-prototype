@@ -18,6 +18,7 @@ import type {
   PaymentMethod,
   TimeOfDay,
   Trade,
+  TradeAvailability,
   TradeType,
 } from "@/lib/types";
 
@@ -63,6 +64,7 @@ type Action =
       gstRegistered: boolean;
       tradingName?: string;
     }
+  | { type: "set-availability"; availability: TradeAvailability }
   | { type: "promote-awaiting-opportunities" }
   | {
       type: "reschedule-job";
@@ -248,6 +250,11 @@ function reducer(state: PersistedState, action: Action): PersistedState {
           gstRegistered: action.gstRegistered,
           tradingName: action.tradingName,
         },
+      };
+    case "set-availability":
+      return {
+        ...state,
+        trade: { ...state.trade, availability: action.availability },
       };
     case "promote-awaiting-opportunities": {
       // Simulate Circl's selection decision. Any opportunity the trade has
