@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAppState } from "@/lib/state/AppStateProvider";
 import { PageHeader } from "@/components/ui/PageHeader";
@@ -22,32 +23,70 @@ export default function AccountPage() {
     router.replace("/");
   };
 
+  const tradeTypesSummary =
+    state.trade.tradeTypes.length === 0
+      ? "Not set"
+      : state.trade.tradeTypes.length <= 2
+        ? state.trade.tradeTypes.join(", ")
+        : `${state.trade.tradeTypes.slice(0, 2).join(", ")} +${state.trade.tradeTypes.length - 2}`;
+
   return (
     <main className="pb-8">
       <PageHeader
         title="Account"
-        subtitle="Identity, language, sign out"
+        subtitle="Identity, work preferences, sign out"
         back
         onBack={() => router.push("/profile")}
       />
 
+      {/* Personal & business — read-only */}
       <section className="px-5 pt-4">
+        <h2 className="mb-2 text-xs font-semibold uppercase tracking-wider text-muted">
+          Personal &amp; business
+        </h2>
         <div className="rounded-2xl border border-border bg-surface p-4">
-          <p className="text-[11px] font-semibold uppercase tracking-wider text-muted">
-            Personal &amp; business
-          </p>
-          <div className="mt-3 space-y-2 text-[13px]">
+          <div className="space-y-2 text-[13px]">
             <FieldRow label="Full name" value={state.trade.fullName} />
             <FieldRow label="Phone" value={state.trade.phone} />
             <FieldRow label="ABN" value={state.trade.abn} />
-            <FieldRow label="Language" value={state.trade.language} />
           </div>
-          <p className="mt-4 text-[11px] text-muted-strong">
+          <p className="mt-3 text-[11px] text-muted-strong">
             To change your name, ABN, or phone number, contact Circl Support.
           </p>
         </div>
       </section>
 
+      {/* Work preferences — editable */}
+      <section className="mt-6 px-5">
+        <h2 className="mb-2 text-xs font-semibold uppercase tracking-wider text-muted">
+          Work preferences
+        </h2>
+        <div className="overflow-hidden rounded-2xl border border-border bg-surface">
+          <EditRow
+            href="/profile/service-area"
+            label="Service area"
+            summary={`${state.trade.serviceArea.suburb} · within ${state.trade.serviceArea.radiusKm} km`}
+          />
+          <EditRow
+            href="/profile/trade-types"
+            label="Trade types"
+            summary={tradeTypesSummary}
+          />
+          <EditRow
+            href="#language"
+            label="Language"
+            summary={state.trade.language}
+            isLast
+            disabled
+          />
+        </div>
+        <p className="mt-2 text-[11px] text-muted-strong">
+          Service area and trade types affect which opportunities appear in
+          Find Jobs.
+        </p>
+      </section>
+
+      {/* Sign out */}
       <section className="mt-6 px-5">
         <div className="rounded-2xl border border-border bg-surface p-4 text-xs text-muted">
           <p>
@@ -69,5 +108,41 @@ function FieldRow({ label, value }: { label: string; value: string }) {
       <span className="text-muted">{label}</span>
       <span className="text-right font-medium">{value}</span>
     </div>
+  );
+}
+
+function EditRow({
+  href,
+  label,
+  summary,
+  isLast,
+  disabled,
+}: {
+  href: string;
+  label: string;
+  summary: string;
+  isLast?: boolean;
+  disabled?: boolean;
+}) {
+  const className =
+    "flex items-center justify-between gap-3 px-4 py-3.5 " +
+    (disabled ? "opacity-50" : "hover:bg-surface-2") +
+    (isLast ? "" : " border-b border-border");
+  const content = (
+    <>
+      <div className="min-w-0">
+        <p className="text-[14px] font-semibold">{label}</p>
+        <p className="mt-0.5 text-xs text-muted">{summary}</p>
+      </div>
+      <span className="text-muted">{disabled ? "—" : "→"}</span>
+    </>
+  );
+  if (disabled) {
+    return <div className={className}>{content}</div>;
+  }
+  return (
+    <Link href={href} className={className}>
+      {content}
+    </Link>
   );
 }

@@ -18,6 +18,7 @@ import type {
   PaymentMethod,
   TimeOfDay,
   Trade,
+  TradeType,
 } from "@/lib/types";
 
 interface PersistedState {
@@ -52,6 +53,11 @@ type Action =
   | { type: "unassign-job"; jobId: string }
   | { type: "set-bank-account"; bankAccount: BankAccount }
   | { type: "set-payment-method"; paymentMethod: PaymentMethod }
+  | {
+      type: "set-service-area";
+      serviceArea: { suburb: string; postcode: string; radiusKm: number };
+    }
+  | { type: "set-trade-types"; tradeTypes: TradeType[] }
   | { type: "promote-awaiting-opportunities" }
   | {
       type: "reschedule-job";
@@ -218,6 +224,16 @@ function reducer(state: PersistedState, action: Action): PersistedState {
       return {
         ...state,
         trade: { ...state.trade, paymentMethod: action.paymentMethod },
+      };
+    case "set-service-area":
+      return {
+        ...state,
+        trade: { ...state.trade, serviceArea: action.serviceArea },
+      };
+    case "set-trade-types":
+      return {
+        ...state,
+        trade: { ...state.trade, tradeTypes: action.tradeTypes },
       };
     case "promote-awaiting-opportunities": {
       // Simulate Circl's selection decision. Any opportunity the trade has
