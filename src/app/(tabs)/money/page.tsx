@@ -6,10 +6,58 @@ import { useAppState } from "@/lib/state/AppStateProvider";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { Badge } from "@/components/ui/Badge";
 import { dateForOffset, formatDateShort, getTeam } from "@/lib/demo-data";
-import type { Job, PaymentStatus } from "@/lib/types";
+import type { Job, JobClient, PaymentStatus } from "@/lib/types";
 
 type ChartPeriod = "today" | "7d" | "30d" | "6m" | "12m";
 type SettlementsTab = "all" | "action" | "settled";
+type ClientPeriod = "30d" | "qtr" | "fy";
+
+const CLIENT_PERIODS: { key: ClientPeriod; label: string }[] = [
+  { key: "30d", label: "30d" },
+  { key: "qtr", label: "QTR" },
+  { key: "fy", label: "FY" },
+];
+
+// Australian BAS quarters: Q1 Jul-Sep, Q2 Oct-Dec, Q3 Jan-Mar, Q4 Apr-Jun.
+function getCurrentQuarter(today: Date): {
+  start: Date;
+  end: Date;
+  label: string;
+} {
+  const m = today.getMonth();
+  const y = today.getFullYear();
+  let qStartMonth: number;
+  let qLabel: string;
+  if (m >= 6 && m <= 8) {
+    qStartMonth = 6;
+    qLabel = "Q1 (Jul–Sep)";
+  } else if (m >= 9 && m <= 11) {
+    qStartMonth = 9;
+    qLabel = "Q2 (Oct–Dec)";
+  } else if (m >= 0 && m <= 2) {
+    qStartMonth = 0;
+    qLabel = "Q3 (Jan–Mar)";
+  } else {
+    qStartMonth = 3;
+    qLabel = "Q4 (Apr–Jun)";
+  }
+  const start = new Date(y, qStartMonth, 1);
+  const end = new Date(y, qStartMonth + 3, 0, 23, 59, 59, 999);
+  return { start, end, label: qLabel };
+}
+
+function getCurrentFY(today: Date): { start: Date; end: Date; label: string } {
+  const y = today.getFullYear();
+  const m = today.getMonth();
+  const fyStart = m >= 6 ? y : y - 1;
+  const start = new Date(fyStart, 6, 1);
+  const end = new Date(fyStart + 1, 5, 30, 23, 59, 59, 999);
+  return {
+    start,
+    end,
+    label: `FY${(fyStart + 1).toString().slice(-2)}`,
+  };
+}
 
 const CHART_PERIODS: { key: ChartPeriod; label: string }[] = [
   { key: "today", label: "Today" },
@@ -29,7 +77,8 @@ function statusBadgeTone(s: PaymentStatus) {
 
 export default function MoneyPage() {
   const { state } = useAppState();
-  const today = new Date();
+  // Stable per-mount — avoids re-bucketing the chart on every render.
+  const today = useMemo(() => new Date(), []);
 
   const [chartPeriod, setChartPeriod] = useState<ChartPeriod>("30d");
   const [settlementsTab, setSettlementsTab] = useState<SettlementsTab>("all");
@@ -87,6 +136,71 @@ export default function MoneyPage() {
     () => buildChart(settlements, chartPeriod, today),
     [settlements, chartPeriod, today],
   );
+
+  // Tax-time aggregates — anchored to the trade's RCTI'd jobs (so figures
+  // line up with what's lodgeable for BAS/income tax, not just generic
+  // settlement).
+  const taxView = useMemo(() => {
+    const rctis = state.jobs.filter((j) => !!j.rctiNumber);
+    const qtr = getCurrentQuarter(today);
+    const fy = getCurrentFY(today);
+
+    const inRange = (start: Date, end: Date) =>
+      rctis.filter((j) => {
+        const d = dateForOffset(j.dateOffsetDays);
+        return d >= start && d <= end;
+      });
+
+    const summarise = (jobs: Job[]) => {
+      const total = jobs.reduce((s, j) => s + j.value, 0);
+      const gst = state.trade.gstRegistered
+        ? jobs.reduce((s, j) => s + (j.value - j.value / 1.1), 0)
+        : 0;
+      return { total, gst, count: jobs.length };
+    };
+
+    return {
+      qtr: { ...summarise(inRange(qtr.start, qtr.end)), label: qtr.label },
+      fy: { ...summarise(inRange(fy.start, fy.end)), label: fy.label },
+    };
+  }, [state.jobs, state.trade.gstRegistered, today]);
+
+  // By-client breakdown — split RCTI'd revenue by client over the chosen
+  // period. Defaults to last 30 days as the "what's coming in lately" lens.
+  const [clientPeriod, setClientPeriod] = useState<ClientPeriod>("30d");
+  const clientBreakdown = useMemo(() => {
+    const rctis = state.jobs.filter((j) => !!j.rctiNumber);
+    let start: Date;
+    let end: Date = today;
+    if (clientPeriod === "30d") {
+      start = new Date(today);
+      start.setDate(today.getDate() - 30);
+    } else if (clientPeriod === "qtr") {
+      const q = getCurrentQuarter(today);
+      start = q.start;
+      end = q.end;
+    } else {
+      const fy = getCurrentFY(today);
+      start = fy.start;
+      end = fy.end;
+    }
+    const inRange = rctis.filter((j) => {
+      const d = dateForOffset(j.dateOffsetDays);
+      return d >= start && d <= end;
+    });
+    const byClient = new Map<JobClient, { total: number; count: number }>();
+    inRange.forEach((j) => {
+      const cur = byClient.get(j.client) ?? { total: 0, count: 0 };
+      cur.total += j.value;
+      cur.count += 1;
+      byClient.set(j.client, cur);
+    });
+    const rows = Array.from(byClient.entries())
+      .map(([client, v]) => ({ client, ...v }))
+      .sort((a, b) => b.total - a.total);
+    const grandTotal = rows.reduce((s, r) => s + r.total, 0);
+    return { rows, grandTotal };
+  }, [state.jobs, clientPeriod, today]);
 
   const sub = state.trade.subscription;
   const bank = state.trade.bankAccount;
@@ -170,6 +284,102 @@ export default function MoneyPage() {
           <div className="mt-3">
             <PayoutsChart points={chart.points} />
           </div>
+        </div>
+      </section>
+
+      {/* Tax-time view — BAS quarter + financial year aggregates */}
+      <section className="mt-4 px-5">
+        <h2 className="mb-2 text-xs font-semibold uppercase tracking-wider text-muted">
+          Tax time
+        </h2>
+        <div className="grid grid-cols-2 gap-2">
+          <TaxCard
+            href="/money/rctis?period=qtr"
+            heading="This quarter"
+            subheading={taxView.qtr.label}
+            total={taxView.qtr.total}
+            gst={state.trade.gstRegistered ? taxView.qtr.gst : null}
+            count={taxView.qtr.count}
+            note="For BAS lodgement"
+          />
+          <TaxCard
+            href="/money/rctis?period=fy"
+            heading="This FY"
+            subheading={taxView.fy.label}
+            total={taxView.fy.total}
+            gst={state.trade.gstRegistered ? taxView.fy.gst : null}
+            count={taxView.fy.count}
+            note="For income tax"
+          />
+        </div>
+      </section>
+
+      {/* By client breakdown */}
+      <section className="mt-4 px-5">
+        <div className="mb-2 flex items-center justify-between">
+          <h2 className="text-xs font-semibold uppercase tracking-wider text-muted">
+            By client
+          </h2>
+          <div className="flex gap-1">
+            {CLIENT_PERIODS.map((p) => (
+              <button
+                key={p.key}
+                type="button"
+                onClick={() => setClientPeriod(p.key)}
+                className={
+                  "rounded-full px-2.5 py-1 text-[10px] font-semibold " +
+                  (clientPeriod === p.key
+                    ? "bg-accent text-white"
+                    : "bg-surface-2 text-muted")
+                }
+                style={{ minHeight: 24 }}
+              >
+                {p.label}
+              </button>
+            ))}
+          </div>
+        </div>
+        <div className="rounded-2xl border border-border bg-surface p-4">
+          {clientBreakdown.rows.length === 0 ? (
+            <p className="text-sm text-muted">
+              No invoiced jobs in this period yet.
+            </p>
+          ) : (
+            <div className="space-y-3">
+              {clientBreakdown.rows.map((r) => {
+                const pct =
+                  clientBreakdown.grandTotal > 0
+                    ? (r.total / clientBreakdown.grandTotal) * 100
+                    : 0;
+                return (
+                  <div key={r.client}>
+                    <div className="flex items-baseline justify-between">
+                      <p className="text-[13px] font-semibold">{r.client}</p>
+                      <p className="text-[13px] font-semibold">
+                        ${r.total.toFixed(0)}
+                      </p>
+                    </div>
+                    <div className="mt-1 flex items-center gap-2">
+                      <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-surface-2">
+                        <div
+                          className="h-full rounded-full bg-accent"
+                          style={{ width: `${Math.max(2, pct)}%` }}
+                        />
+                      </div>
+                      <p className="w-16 text-right text-[10px] text-muted-strong">
+                        {r.count} job{r.count === 1 ? "" : "s"}
+                      </p>
+                    </div>
+                  </div>
+                );
+              })}
+              <div className="border-t border-border pt-2 text-[11px] text-muted-strong">
+                ${clientBreakdown.grandTotal.toFixed(0)} total across{" "}
+                {clientBreakdown.rows.length} client
+                {clientBreakdown.rows.length === 1 ? "" : "s"}
+              </div>
+            </div>
+          )}
         </div>
       </section>
 
@@ -351,6 +561,44 @@ export default function MoneyPage() {
         </div>
       </section>
     </main>
+  );
+}
+
+function TaxCard({
+  href,
+  heading,
+  subheading,
+  total,
+  gst,
+  count,
+  note,
+}: {
+  href: string;
+  heading: string;
+  subheading: string;
+  total: number;
+  gst: number | null;
+  count: number;
+  note: string;
+}) {
+  return (
+    <Link
+      href={href}
+      className="block rounded-2xl border border-border bg-surface p-3 hover:bg-surface-2"
+    >
+      <p className="text-[10px] font-semibold uppercase tracking-wider text-muted">
+        {heading}
+      </p>
+      <p className="mt-0.5 text-[10px] text-muted-strong">{subheading}</p>
+      <p className="mt-1 text-[20px] font-bold tracking-tight text-accent">
+        ${total.toFixed(0)}
+      </p>
+      <p className="mt-0.5 text-[11px] text-muted">
+        {count} RCTI{count === 1 ? "" : "s"}
+        {gst !== null ? ` · GST $${gst.toFixed(0)}` : ""}
+      </p>
+      <p className="mt-2 text-[10px] text-muted-strong">{note} →</p>
+    </Link>
   );
 }
 
