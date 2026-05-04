@@ -52,6 +52,7 @@ type Action =
   | { type: "unassign-job"; jobId: string }
   | { type: "set-bank-account"; bankAccount: BankAccount }
   | { type: "set-payment-method"; paymentMethod: PaymentMethod }
+  | { type: "promote-awaiting-opportunities" }
   | {
       type: "reschedule-job";
       jobId: string;
@@ -132,6 +133,7 @@ function reducer(state: PersistedState, action: Action): PersistedState {
             ? {
                 ...o,
                 outcome: "awaiting",
+                respondedAt: new Date().toISOString(),
                 responded: {
                   mode: action.mode,
                   value: action.value ?? o.value,
@@ -215,6 +217,70 @@ function reducer(state: PersistedState, action: Action): PersistedState {
         ...state,
         trade: { ...state.trade, paymentMethod: action.paymentMethod },
       };
+    case "promote-awaiting-opportunities": {
+      // Simulate Circl's selection decision. Any opportunity the trade has
+      // responded to (outcome === "awaiting") older than the threshold gets
+      // promoted to "selected" and a corresponding Job is created with a
+      // wonAt timestamp so the Home notification can surface the win.
+      const PROMOTE_AFTER_MS = 15_000;
+      const now = Date.now();
+      const ready = state.opportunities.filter(
+        (o) =>
+          o.outcome === "awaiting" &&
+          !!o.respondedAt &&
+          now - new Date(o.respondedAt).getTime() >= PROMOTE_AFTER_MS,
+      );
+      if (ready.length === 0) return state;
+
+      const wonAt = new Date().toISOString();
+      const newJobs: Job[] = ready.map((opp) => {
+        const idSuffix = opp.id.replace(/^OP-/, "");
+        const isStarlink = opp.type === "Starlink Installation";
+        const startTime =
+          opp.timeOfDay === "Morning"
+            ? "10:00 AM"
+            : opp.timeOfDay === "Afternoon"
+              ? "2:00 PM"
+              : "5:00 PM";
+        return {
+          id: `CG${idSuffix}`,
+          cgNumber: `CG${idSuffix}`,
+          type: opp.type,
+          client: isStarlink ? "Starlink" : "Harvey Norman",
+          customer: {
+            firstName: opp.customer.firstName,
+            lastName: `${opp.customer.lastNameInitial}.`,
+            phone: "0400 000 000",
+            address: "Address available once accepted",
+            suburb: opp.suburb.replace(" NSW", ""),
+            postcode: "2000",
+            rating: opp.customer.rating,
+          },
+          workOrder: `WO-${idSuffix}`,
+          scope: opp.scope,
+          dateOffsetDays: opp.dateOffsetDays,
+          timeOfDay: opp.timeOfDay,
+          startTime,
+          value: opp.responded?.value ?? opp.value,
+          estimatedDurationMinutes: 90,
+          equipmentDeliveryStatus: isStarlink ? "Expected Today" : "N/A",
+          status: "Confirmed",
+          paymentStatus: "Not Applicable",
+          attendance: "Pending",
+          complianceRequired: opp.complianceRequired,
+          wonAt,
+        };
+      });
+
+      const readyIds = new Set(ready.map((r) => r.id));
+      return {
+        ...state,
+        jobs: [...state.jobs, ...newJobs],
+        opportunities: state.opportunities.map((o) =>
+          readyIds.has(o.id) ? { ...o, outcome: "selected" } : o,
+        ),
+      };
+    }
     case "reschedule-job": {
       const job = state.jobs.find((j) => j.id === action.jobId);
       if (!job) return state;
@@ -293,6 +359,17 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
       // ignore
     }
   }, [state, hydrated]);
+
+  // Simulated Circl decision tick — promotes any awaiting-too-long opportunity
+  // to selected and creates a Job for it. The reducer no-ops if nothing is
+  // ready, so the interval is cheap.
+  useEffect(() => {
+    if (!hydrated) return;
+    const id = setInterval(() => {
+      setState((s) => reducer(s, { type: "promote-awaiting-opportunities" }));
+    }, 5000);
+    return () => clearInterval(id);
+  }, [hydrated]);
 
   // Connectivity
   useEffect(() => {

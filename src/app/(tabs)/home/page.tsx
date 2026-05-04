@@ -93,6 +93,28 @@ function NotificationsStrip() {
       cta: string;
     }> = [];
 
+    // Job awarded: a job won via Circl's selection from an accepted opportunity.
+    // Surfaces while wonAt is recent (within 5 minutes) so the trade sees the
+    // result of their accept and can navigate straight to it.
+    const RECENT_WIN_MS = 5 * 60_000;
+    const now = Date.now();
+    const recentWins = state.jobs.filter(
+      (j) =>
+        !!j.wonAt && now - new Date(j.wonAt).getTime() <= RECENT_WIN_MS,
+    );
+    recentWins.forEach((job) => {
+      out.push({
+        id: `won-${job.id}`,
+        tone: "accent",
+        icon: "🎉",
+        label: "Job awarded",
+        title: `${job.type} · ${job.customer.suburb}`,
+        body: `Circl selected you. ${job.cgNumber} is now in your Schedule for ${job.dateOffsetDays === 0 ? "today" : job.dateOffsetDays === 1 ? "tomorrow" : `${job.dateOffsetDays} days from now`} at ${job.startTime}.`,
+        href: `/jobs/${job.id}`,
+        cta: "Open job",
+      });
+    });
+
     // Jeopardy: tomorrow's job with equipment not yet received.
     const jeopardyJob = state.jobs.find(
       (j) =>

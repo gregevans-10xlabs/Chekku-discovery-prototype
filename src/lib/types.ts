@@ -114,6 +114,10 @@ export interface Job {
   // RCTI Generated or beyond). settlementDate is set when paymentStatus reaches Settled.
   rctiNumber?: string;
   settlementDate?: string;
+  // ISO timestamp set when this job was awarded via Circl's decision on an
+  // accepted opportunity. Used to surface a "Job awarded" notification on Home
+  // for a few minutes after the win lands.
+  wonAt?: string;
 }
 
 export interface OpportunityResponse {
@@ -137,6 +141,10 @@ export interface Opportunity {
   longerJobHint?: string;
   outcome?: "awaiting" | "selected" | "not-selected";
   responded?: OpportunityResponse;
+  // ISO timestamp set when the trade submitted their response. Used to time
+  // the simulated Circl decision — opportunities awaiting longer than the
+  // threshold get auto-promoted to "selected" with a Job created.
+  respondedAt?: string;
 }
 
 export interface BankAccount {
