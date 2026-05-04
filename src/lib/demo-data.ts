@@ -374,7 +374,9 @@ export function getJobs(): Job[] {
         number: "AS70348415",
         url: "https://startrack.com.au/track-trace/?id=AS70348415",
       },
-      status: "Confirmed",
+      // Pre-set to InProgress so Tom's team visibility shows real activity
+      // (Jake oversees while Tom executes).
+      status: "InProgress",
       paymentStatus: "Not Applicable",
       attendance: "Confirmed",
       complianceRequired: [
@@ -660,6 +662,7 @@ export function getJobs(): Job[] {
         { name: "Electrical Contractor Licence", verified: true },
         { name: "Working at Heights", verified: true },
       ],
+      assignedToMemberId: "TM-1",
     },
     {
       id: "CG49002",

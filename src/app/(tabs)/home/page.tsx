@@ -6,6 +6,7 @@ import Link from "next/link";
 import { useAppState } from "@/lib/state/AppStateProvider";
 import {
   getComplianceDocs,
+  getTeam,
   relativeDayLabel,
   startTimeToMinutes,
 } from "@/lib/demo-data";
@@ -16,20 +17,29 @@ export default function HomePage() {
   const { state, dispatch } = useAppState();
   const router = useRouter();
 
-  const jobs = state.jobs;
+  // When the team is active, the trade's own Home view excludes work delegated
+  // to team members — those live in My Team. Without a team, all jobs are the
+  // trade's own.
+  const ownJobs = useMemo(
+    () =>
+      state.hasTeam
+        ? state.jobs.filter((j) => !j.assignedToMemberId)
+        : state.jobs,
+    [state.jobs, state.hasTeam],
+  );
   const todayJobs = useMemo(
     () =>
-      jobs
+      ownJobs
         .filter((j) => j.dateOffsetDays === 0)
         .sort((a, b) => startTimeToMinutes(a.startTime) - startTimeToMinutes(b.startTime)),
-    [jobs],
+    [ownJobs],
   );
   const tomorrowJobs = useMemo(
     () =>
-      jobs
+      ownJobs
         .filter((j) => j.dateOffsetDays === 1)
         .sort((a, b) => startTimeToMinutes(a.startTime) - startTimeToMinutes(b.startTime)),
-    [jobs],
+    [ownJobs],
   );
 
   const anyInProgress = todayJobs.some((j) => j.status === "InProgress");
@@ -126,12 +136,19 @@ function NotificationsStrip() {
       const trackingDetail = jeopardyJob.tracking
         ? ` ${jeopardyJob.tracking.carrier} ${jeopardyJob.tracking.number} is still in transit.`
         : "";
+      // Surface team ownership when this is a delegated job — Jake oversees, Tom executes.
+      const member = jeopardyJob.assignedToMemberId
+        ? getTeam().members.find((m) => m.id === jeopardyJob.assignedToMemberId)
+        : null;
+      const title = member
+        ? `${member.name.split(" ")[0]}'s tomorrow ${jeopardyJob.customer.suburb} job`
+        : `Tomorrow's ${jeopardyJob.customer.suburb} job`;
       out.push({
         id: `jeopardy-${jeopardyJob.id}`,
         tone: "warn",
         icon: "⚠️",
-        label: "Equipment not delivered",
-        title: `Tomorrow's ${jeopardyJob.customer.suburb} job`,
+        label: member ? "Team — equipment not delivered" : "Equipment not delivered",
+        title,
         body: `${jeopardyJob.type} at ${jeopardyJob.startTime}.${trackingDetail} Tap to track or contact Circl Support.`,
         href: `/jobs/${jeopardyJob.id}`,
         cta: "View job",

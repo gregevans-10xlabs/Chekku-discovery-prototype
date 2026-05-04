@@ -23,9 +23,14 @@ export default function SchedulePage() {
   const { state } = useAppState();
   const [view, setView] = useState<"list" | "calendar">("list");
 
+  // When the team is active, Schedule shows only the trade's own work — work
+  // delegated to team members lives in My Team.
   const jobs = useMemo(
-    () => [...state.jobs].sort((a, b) => a.dateOffsetDays - b.dateOffsetDays),
-    [state.jobs],
+    () =>
+      [...state.jobs]
+        .filter((j) => !state.hasTeam || !j.assignedToMemberId)
+        .sort((a, b) => a.dateOffsetDays - b.dateOffsetDays),
+    [state.jobs, state.hasTeam],
   );
 
   const sections = useMemo<ScheduleSection[]>(() => {

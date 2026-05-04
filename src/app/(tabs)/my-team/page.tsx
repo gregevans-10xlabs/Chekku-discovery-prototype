@@ -12,16 +12,38 @@ export default function MyTeamPage() {
   const team = getTeam();
 
   const assignedCounts = useMemo(() => {
-    const counts: Record<string, { active: number; today: number }> = {};
+    const counts: Record<
+      string,
+      { active: number; today: number; jeopardy: number; inProgress: number }
+    > = {};
     state.jobs.forEach((j) => {
       if (!j.assignedToMemberId) return;
-      const c = counts[j.assignedToMemberId] ?? { active: 0, today: 0 };
+      const c =
+        counts[j.assignedToMemberId] ??
+        { active: 0, today: 0, jeopardy: 0, inProgress: 0 };
       if (j.status !== "Completed") c.active += 1;
+      if (j.status === "InProgress") c.inProgress += 1;
       if (j.dateOffsetDays === 0) c.today += 1;
+      if (
+        j.equipmentDeliveryStatus === "Not Yet Received" ||
+        j.equipmentDeliveryStatus === "Delayed"
+      )
+        c.jeopardy += 1;
       counts[j.assignedToMemberId] = c;
     });
     return counts;
   }, [state.jobs]);
+
+  // Team-wide aggregate for the strip at the top of the page.
+  const teamSummary = useMemo(() => {
+    const all = Object.values(assignedCounts);
+    return {
+      active: all.reduce((s, c) => s + c.active, 0),
+      today: all.reduce((s, c) => s + c.today, 0),
+      inProgress: all.reduce((s, c) => s + c.inProgress, 0),
+      jeopardy: all.reduce((s, c) => s + c.jeopardy, 0),
+    };
+  }, [assignedCounts]);
 
   if (!state.hasTeam) {
     return (
@@ -47,9 +69,38 @@ export default function MyTeamPage() {
         subtitle={`${team.members.length} member${team.members.length === 1 ? "" : "s"}`}
       />
 
+      {/* Team-wide aggregate */}
+      <section className="px-4 pt-4">
+        <div className="rounded-2xl border border-border bg-surface p-4">
+          <p className="text-[11px] font-semibold uppercase tracking-wider text-muted">
+            Team activity
+          </p>
+          <p className="mt-1 text-[15px] font-semibold">
+            {teamSummary.active === 0
+              ? "Nothing assigned to your team yet"
+              : `${teamSummary.active} job${teamSummary.active === 1 ? "" : "s"} in flight across your team`}
+          </p>
+          {teamSummary.active > 0 ? (
+            <div className="mt-2 flex flex-wrap gap-2 text-[11px]">
+              <Badge tone="neutral">
+                {teamSummary.today} today
+              </Badge>
+              {teamSummary.inProgress > 0 ? (
+                <Badge tone="accent">{teamSummary.inProgress} in progress</Badge>
+              ) : null}
+              {teamSummary.jeopardy > 0 ? (
+                <Badge tone="warn">⚠ {teamSummary.jeopardy} need attention</Badge>
+              ) : null}
+            </div>
+          ) : null}
+        </div>
+      </section>
+
       <section className="space-y-3 px-4 pt-4">
         {team.members.map((m) => {
-          const counts = assignedCounts[m.id] ?? { active: 0, today: 0 };
+          const counts =
+            assignedCounts[m.id] ??
+            { active: 0, today: 0, jeopardy: 0, inProgress: 0 };
           return (
             <Link
               key={m.id}
@@ -87,6 +138,17 @@ export default function MyTeamPage() {
                   </p>
                 </div>
               </div>
+
+              {counts.inProgress > 0 || counts.jeopardy > 0 ? (
+                <div className="mt-2 flex flex-wrap gap-1.5">
+                  {counts.inProgress > 0 ? (
+                    <Badge tone="accent">{counts.inProgress} in progress</Badge>
+                  ) : null}
+                  {counts.jeopardy > 0 ? (
+                    <Badge tone="warn">⚠ {counts.jeopardy} need attention</Badge>
+                  ) : null}
+                </div>
+              ) : null}
 
               <div className="mt-3 flex items-center justify-between text-[12px] font-medium text-accent">
                 <span>View &amp; delegate</span>

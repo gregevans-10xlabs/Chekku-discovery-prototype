@@ -72,7 +72,9 @@ function defaultState(): PersistedState {
     pastOpportunities: getPastOpportunities(),
     selectedJobId: null,
     checkedInJobId: null,
-    sacDoneJobIds: [],
+    // Pre-mark Tom's CG48954 as Safety Check done so the team-visibility chips
+    // show real progress rather than all-empty rows on first open.
+    sacDoneJobIds: ["CG48954"],
     irDoneJobIds: [],
     dayView: "morning",
     forceOffline: false,
