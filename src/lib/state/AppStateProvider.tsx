@@ -352,7 +352,7 @@ function reducer(state: PersistedState, action: Action): PersistedState {
   }
 }
 
-const KEY = "chekku:state:v2";
+const KEY = "chekku:state:v3";
 
 interface AppStateCtx {
   state: PersistedState;
