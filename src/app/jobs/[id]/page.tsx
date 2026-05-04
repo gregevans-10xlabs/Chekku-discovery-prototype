@@ -312,7 +312,7 @@ export default function JobDetail({
           <div className="rounded-2xl border border-success/40 bg-success-soft p-5 text-center">
             <p className="text-2xl">✓</p>
             <p className="mt-1 text-sm font-semibold text-success">
-              Job complete — payment processing
+              Job complete — {job.paymentStatus.toLowerCase()}
             </p>
           </div>
         ) : (
@@ -329,6 +329,32 @@ export default function JobDetail({
           </p>
         ) : null}
       </section>
+
+      {/* RCTI shortcut — only when the job has reached RCTI Generated or beyond */}
+      {jobDone && job.rctiNumber ? (
+        <section className="mt-3 px-4">
+          <Link
+            href={`/money/rcti/${job.id}`}
+            className="flex items-center justify-between rounded-2xl border border-border bg-surface p-4"
+          >
+            <div className="min-w-0">
+              <p className="text-[11px] font-semibold uppercase tracking-wider text-muted">
+                RCTI
+              </p>
+              <p className="mt-0.5 text-[14px] font-semibold">
+                {job.rctiNumber}
+              </p>
+              <p className="mt-0.5 text-[12px] text-muted">
+                ${job.value.toFixed(2)} ·{" "}
+                {job.paymentStatus === "Action Required"
+                  ? "Needs your attention"
+                  : job.paymentStatus}
+              </p>
+            </div>
+            <span className="text-accent">View →</span>
+          </Link>
+        </section>
+      ) : null}
 
       {/* Schedule history */}
       {job.events && job.events.length > 0 ? (
