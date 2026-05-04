@@ -5,7 +5,7 @@ import { useMemo, useState } from "react";
 import { useAppState } from "@/lib/state/AppStateProvider";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { Badge } from "@/components/ui/Badge";
-import { dateForOffset, formatDateShort, getTeam } from "@/lib/demo-data";
+import { dateForOffset, formatDateShort } from "@/lib/demo-data";
 import type { Job, JobClient, PaymentStatus } from "@/lib/types";
 
 type ChartPeriod = "today" | "7d" | "30d" | "6m" | "12m";
@@ -205,7 +205,7 @@ export default function MoneyPage() {
   const sub = state.trade.subscription;
   const bank = state.trade.bankAccount;
   const card = state.trade.paymentMethod;
-  const team = getTeam();
+  const team = state.team;
 
   return (
     <main className="pb-8">

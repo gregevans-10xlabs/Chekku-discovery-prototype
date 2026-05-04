@@ -5,12 +5,10 @@ import { useRouter } from "next/navigation";
 import { useAppState } from "@/lib/state/AppStateProvider";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { Button } from "@/components/ui/Button";
-import { getTeam } from "@/lib/demo-data";
-
 export default function TeamSettingsPage() {
   const router = useRouter();
   const { state, dispatch } = useAppState();
-  const team = getTeam();
+  const team = state.team;
 
   return (
     <main className="pb-8">

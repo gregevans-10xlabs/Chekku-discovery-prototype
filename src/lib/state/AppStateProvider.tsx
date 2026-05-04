@@ -8,7 +8,7 @@ import {
   useMemo,
   useState,
 } from "react";
-import { getJobs, getOpportunities, getPastOpportunities, JAKE } from "@/lib/demo-data";
+import { getJobs, getOpportunities, getPastOpportunities, getTeam, JAKE } from "@/lib/demo-data";
 import type {
   AttendanceConfirmation,
   BankAccount,
@@ -16,11 +16,15 @@ import type {
   JobRescheduleEvent,
   Opportunity,
   PaymentMethod,
+  Team,
   TimeOfDay,
   Trade,
   TradeAvailability,
   TradeType,
 } from "@/lib/types";
+
+type TeamMember = Team["members"][number];
+type TeamRole = TeamMember["role"];
 
 interface PersistedState {
   onboarded: boolean;
@@ -35,6 +39,7 @@ interface PersistedState {
   irDoneJobIds: string[];
   dayView: "morning" | "during" | "evening" | "tomorrow";
   forceOffline: boolean;
+  team: Team;
 }
 
 type Action =
@@ -65,6 +70,9 @@ type Action =
       tradingName?: string;
     }
   | { type: "set-availability"; availability: TradeAvailability }
+  | { type: "add-team-member"; name: string; role: TeamRole }
+  | { type: "update-team-member"; memberId: string; patch: Partial<Pick<TeamMember, "name" | "role">> }
+  | { type: "remove-team-member"; memberId: string }
   | { type: "promote-awaiting-opportunities" }
   | {
       type: "reschedule-job";
@@ -91,6 +99,7 @@ function defaultState(): PersistedState {
     irDoneJobIds: [],
     dayView: "morning",
     forceOffline: false,
+    team: getTeam(),
   };
 }
 
@@ -256,6 +265,50 @@ function reducer(state: PersistedState, action: Action): PersistedState {
         ...state,
         trade: { ...state.trade, availability: action.availability },
       };
+    case "add-team-member": {
+      // New invites land as "Attention" until they upload their compliance
+      // docs from their own Chekku login. activeJobs is recomputed live
+      // from state.jobs so the seed value is informational only.
+      const id = `TM-${Date.now().toString(36).slice(-5).toUpperCase()}`;
+      return {
+        ...state,
+        team: {
+          members: [
+            ...state.team.members,
+            {
+              id,
+              name: action.name,
+              role: action.role,
+              activeJobs: 0,
+              compliance: "Attention",
+            },
+          ],
+        },
+      };
+    }
+    case "update-team-member":
+      return {
+        ...state,
+        team: {
+          members: state.team.members.map((m) =>
+            m.id === action.memberId ? { ...m, ...action.patch } : m,
+          ),
+        },
+      };
+    case "remove-team-member":
+      // Removing a member also clears any job assignments that pointed at
+      // them — those jobs revert to the primary contractor (Jake).
+      return {
+        ...state,
+        team: {
+          members: state.team.members.filter((m) => m.id !== action.memberId),
+        },
+        jobs: state.jobs.map((j) => {
+          if (j.assignedToMemberId !== action.memberId) return j;
+          const { assignedToMemberId: _, ...rest } = j;
+          return rest;
+        }),
+      };
     case "promote-awaiting-opportunities": {
       // Simulate Circl's selection decision. Any opportunity the trade has
       // responded to (outcome === "awaiting") older than the threshold gets
@@ -359,7 +412,7 @@ function reducer(state: PersistedState, action: Action): PersistedState {
   }
 }
 
-const KEY = "chekku:state:v3";
+const KEY = "chekku:state:v4";
 
 interface AppStateCtx {
   state: PersistedState;

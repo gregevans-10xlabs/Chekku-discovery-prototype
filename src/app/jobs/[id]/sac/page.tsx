@@ -21,6 +21,13 @@ interface SacState {
   swmsPhoto: CapturedPhoto | null;
   scopeReviewed: boolean;
   addTeam: boolean;
+  // Team members from the trade's roster who are on site for this job.
+  // Captured during SAC for site-evidence — what's stored is the audit
+  // record of who attested to the safety check.
+  teamMembersOnSite: string[];
+  // Free-text crew names for helpers who aren't in the trade's Chekku
+  // roster (mate giving a hand for the day, etc.).
+  crewNames: string;
   siteSafe: "" | "yes" | "no";
   safetyPhoto: CapturedPhoto | null;
   risks: "" | "none" | "yes";
@@ -44,6 +51,8 @@ const INITIAL: SacState = {
   swmsPhoto: null,
   scopeReviewed: false,
   addTeam: false,
+  teamMembersOnSite: [],
+  crewNames: "",
   siteSafe: "",
   safetyPhoto: null,
   risks: "",
@@ -201,11 +210,100 @@ export default function SacPage({
             onChange={(v) => update({ scopeReviewed: v })}
           />
 
-          <Toggle
-            label="Add team members (subcontractor or crew on site)"
-            checked={data.addTeam}
-            onChange={(v) => update({ addTeam: v })}
-          />
+          <div>
+            <Toggle
+              label="Add team members (subcontractor or crew on site)"
+              sub="Records who else is attending — for site evidence."
+              checked={data.addTeam}
+              onChange={(v) =>
+                update({
+                  addTeam: v,
+                  // Clear the picker when the toggle goes off so the
+                  // captured roster doesn't quietly persist out of view.
+                  teamMembersOnSite: v ? data.teamMembersOnSite : [],
+                  crewNames: v ? data.crewNames : "",
+                })
+              }
+            />
+
+            {data.addTeam ? (
+              <div className="mt-3 space-y-3 rounded-2xl border border-border bg-surface p-3">
+                {state.hasTeam && state.team.members.length > 0 ? (
+                  <div>
+                    <p className="text-[11px] font-semibold uppercase tracking-wider text-muted">
+                      From your team
+                    </p>
+                    <div className="mt-2 space-y-1.5">
+                      {state.team.members.map((m) => {
+                        const checked = data.teamMembersOnSite.includes(m.id);
+                        return (
+                          <button
+                            key={m.id}
+                            type="button"
+                            onClick={() =>
+                              update({
+                                teamMembersOnSite: checked
+                                  ? data.teamMembersOnSite.filter(
+                                      (x) => x !== m.id,
+                                    )
+                                  : [...data.teamMembersOnSite, m.id],
+                              })
+                            }
+                            className={
+                              "flex w-full items-center gap-3 rounded-xl border p-2.5 text-left transition-colors " +
+                              (checked
+                                ? "border-accent bg-accent-soft"
+                                : "border-border-strong bg-surface")
+                            }
+                          >
+                            <span
+                              className={
+                                "flex h-5 w-5 shrink-0 items-center justify-center rounded-md border " +
+                                (checked
+                                  ? "border-accent bg-accent text-white"
+                                  : "border-border-strong")
+                              }
+                            >
+                              {checked ? "✓" : ""}
+                            </span>
+                            <span className="min-w-0 flex-1">
+                              <span className="block text-[13px] font-semibold">
+                                {m.name}
+                              </span>
+                              <span className="block text-[11px] text-muted">
+                                {m.role}
+                              </span>
+                            </span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                ) : null}
+
+                <div>
+                  <label className="text-[11px] font-semibold uppercase tracking-wider text-muted">
+                    Other crew on site (optional)
+                  </label>
+                  <input
+                    value={data.crewNames}
+                    onChange={(e) => update({ crewNames: e.target.value })}
+                    placeholder={
+                      state.hasTeam
+                        ? "e.g. Dave (mate helping today)"
+                        : "Names of anyone helping on site"
+                    }
+                    className="mt-1 w-full rounded-xl border border-border-strong bg-surface px-3 py-2.5 text-[13px] outline-none focus:border-accent"
+                  />
+                </div>
+
+                <p className="text-[11px] text-muted-strong">
+                  Each named team member confirms their own SWMS / PPE on
+                  their own device. This list is the site evidence record.
+                </p>
+              </div>
+            ) : null}
+          </div>
         </div>
       )}
 
@@ -461,6 +559,41 @@ export default function SacPage({
             Your signature confirms the site is safe and controls are in place.
             This is the legal record.
           </p>
+
+          {/* On-site roster summary — surfaces what the signer is attesting */}
+          {data.addTeam &&
+          (data.teamMembersOnSite.length > 0 || data.crewNames.trim()) ? (
+            <div className="rounded-2xl border border-border bg-surface p-4">
+              <p className="text-[11px] font-semibold uppercase tracking-wider text-muted">
+                On site for this job
+              </p>
+              <ul className="mt-2 space-y-1 text-[13px]">
+                <li className="flex items-center gap-2">
+                  <span className="text-accent">•</span>
+                  <span className="font-semibold">{state.trade.fullName}</span>
+                  <span className="text-[11px] text-muted">(you)</span>
+                </li>
+                {data.teamMembersOnSite.map((mid) => {
+                  const m = state.team.members.find((x) => x.id === mid);
+                  if (!m) return null;
+                  return (
+                    <li key={mid} className="flex items-center gap-2">
+                      <span className="text-accent">•</span>
+                      <span className="font-semibold">{m.name}</span>
+                      <span className="text-[11px] text-muted">({m.role})</span>
+                    </li>
+                  );
+                })}
+                {data.crewNames.trim() ? (
+                  <li className="flex items-start gap-2">
+                    <span className="text-accent">•</span>
+                    <span>{data.crewNames}</span>
+                  </li>
+                ) : null}
+              </ul>
+            </div>
+          ) : null}
+
           <SignaturePad
             value={data.signature}
             onChange={(v) => update({ signature: v })}

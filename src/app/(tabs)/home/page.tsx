@@ -6,7 +6,6 @@ import Link from "next/link";
 import { useAppState } from "@/lib/state/AppStateProvider";
 import {
   getComplianceDocs,
-  getTeam,
   relativeDayLabel,
   startTimeToMinutes,
 } from "@/lib/demo-data";
@@ -138,7 +137,7 @@ function NotificationsStrip() {
         : "";
       // Surface team ownership when this is a delegated job — Jake oversees, Tom executes.
       const member = jeopardyJob.assignedToMemberId
-        ? getTeam().members.find((m) => m.id === jeopardyJob.assignedToMemberId)
+        ? state.team.members.find((m) => m.id === jeopardyJob.assignedToMemberId)
         : null;
       const title = member
         ? `${member.name.split(" ")[0]}'s tomorrow ${jeopardyJob.customer.suburb} job`
@@ -196,7 +195,7 @@ function NotificationsStrip() {
     }
 
     return out;
-  }, [state.jobs, state.opportunities, state.trade.bankAccount]);
+  }, [state.jobs, state.opportunities, state.trade.bankAccount, state.team.members]);
 
   if (items.length === 0) return null;
 

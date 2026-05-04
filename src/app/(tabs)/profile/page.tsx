@@ -5,7 +5,7 @@ import { useMemo } from "react";
 import { useAppState } from "@/lib/state/AppStateProvider";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { Badge } from "@/components/ui/Badge";
-import { getComplianceDocs, getLibraryItems, getTeam } from "@/lib/demo-data";
+import { getComplianceDocs, getLibraryItems } from "@/lib/demo-data";
 
 interface AttentionItem {
   label: string;
@@ -15,7 +15,7 @@ interface AttentionItem {
 export default function ProfileHub() {
   const { state } = useAppState();
   const docs = getComplianceDocs();
-  const team = getTeam();
+  const team = state.team;
   const sub = state.trade.subscription;
 
   // Compliance summary for hub tile
