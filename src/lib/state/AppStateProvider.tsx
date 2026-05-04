@@ -46,6 +46,8 @@ type Action =
   | { type: "set-day-view"; view: PersistedState["dayView"] }
   | { type: "toggle-offline" }
   | { type: "enable-team" }
+  | { type: "delegate-job"; jobId: string; memberId: string }
+  | { type: "unassign-job"; jobId: string }
   | {
       type: "reschedule-job";
       jobId: string;
@@ -181,6 +183,24 @@ function reducer(state: PersistedState, action: Action): PersistedState {
       return { ...state, forceOffline: !state.forceOffline };
     case "enable-team":
       return { ...state, hasTeam: true };
+    case "delegate-job":
+      return {
+        ...state,
+        jobs: state.jobs.map((j) =>
+          j.id === action.jobId
+            ? { ...j, assignedToMemberId: action.memberId }
+            : j,
+        ),
+      };
+    case "unassign-job":
+      return {
+        ...state,
+        jobs: state.jobs.map((j) => {
+          if (j.id !== action.jobId) return j;
+          const { assignedToMemberId: _, ...rest } = j;
+          return rest;
+        }),
+      };
     case "reschedule-job": {
       const job = state.jobs.find((j) => j.id === action.jobId);
       if (!job) return state;

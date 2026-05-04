@@ -100,6 +100,9 @@ export interface Job {
   checkInAt?: string;
   complianceRequired: { name: string; verified: boolean }[];
   events?: JobEvent[];
+  // Optional team-member assignment for primary contractors with subs/employees.
+  // When unset, the job is the primary contractor's own.
+  assignedToMemberId?: string;
 }
 
 export interface OpportunityResponse {

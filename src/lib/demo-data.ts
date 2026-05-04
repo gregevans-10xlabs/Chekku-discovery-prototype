@@ -361,6 +361,7 @@ export function getJobs(): Job[] {
         { name: "Electrical Contractor Licence", verified: true },
         { name: "Working at Heights", verified: true },
       ],
+      assignedToMemberId: "TM-1",
     },
     {
       id: "CG48955",
@@ -396,6 +397,7 @@ export function getJobs(): Job[] {
         { name: "Working at Heights", verified: true },
         { name: "White Card", verified: true },
       ],
+      assignedToMemberId: "TM-1",
     },
     // ---- PAST (yesterday + last 10 days) ----
     {
@@ -1074,8 +1076,22 @@ export function getTeam(): Team {
         id: "TM-1",
         name: "Tom Baker",
         role: "Subcontractor",
-        activeJobs: 1,
+        activeJobs: 2,
         compliance: "Good",
+      },
+      {
+        id: "TM-2",
+        name: "Sarah Chen",
+        role: "Employee",
+        activeJobs: 0,
+        compliance: "Good",
+      },
+      {
+        id: "TM-3",
+        name: "Marcus Webb",
+        role: "Subcontractor",
+        activeJobs: 0,
+        compliance: "Attention",
       },
     ],
   };

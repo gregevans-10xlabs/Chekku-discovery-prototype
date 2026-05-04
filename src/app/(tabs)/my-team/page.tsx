@@ -1,5 +1,7 @@
 "use client";
 
+import Link from "next/link";
+import { useMemo } from "react";
 import { useAppState } from "@/lib/state/AppStateProvider";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { Badge } from "@/components/ui/Badge";
@@ -8,6 +10,18 @@ import { getTeam } from "@/lib/demo-data";
 export default function MyTeamPage() {
   const { state } = useAppState();
   const team = getTeam();
+
+  const assignedCounts = useMemo(() => {
+    const counts: Record<string, { active: number; today: number }> = {};
+    state.jobs.forEach((j) => {
+      if (!j.assignedToMemberId) return;
+      const c = counts[j.assignedToMemberId] ?? { active: 0, today: 0 };
+      if (j.status !== "Completed") c.active += 1;
+      if (j.dateOffsetDays === 0) c.today += 1;
+      counts[j.assignedToMemberId] = c;
+    });
+    return counts;
+  }, [state.jobs]);
 
   if (!state.hasTeam) {
     return (
@@ -34,55 +48,53 @@ export default function MyTeamPage() {
       />
 
       <section className="space-y-3 px-4 pt-4">
-        {team.members.map((m) => (
-          <div
-            key={m.id}
-            className="rounded-2xl border border-border bg-surface p-4"
-          >
-            <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-accent-soft font-bold text-accent">
-                {m.name.charAt(0)}
+        {team.members.map((m) => {
+          const counts = assignedCounts[m.id] ?? { active: 0, today: 0 };
+          return (
+            <Link
+              key={m.id}
+              href={`/my-team/${m.id}`}
+              className="block rounded-2xl border border-border bg-surface p-4"
+            >
+              <div className="flex items-center gap-3">
+                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-accent-soft font-bold text-accent">
+                  {m.name.charAt(0)}
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="text-sm font-semibold">{m.name}</p>
+                  <p className="text-xs text-muted">{m.role}</p>
+                </div>
+                <Badge tone={m.compliance === "Good" ? "success" : "warn"}>
+                  {m.compliance === "Good" ? "Compliant" : "Attention"}
+                </Badge>
               </div>
-              <div className="min-w-0 flex-1">
-                <p className="text-sm font-semibold">{m.name}</p>
-                <p className="text-xs text-muted">{m.role}</p>
-              </div>
-              <Badge tone={m.compliance === "Good" ? "success" : "warn"}>
-                {m.compliance === "Good" ? "Compliant" : "Attention"}
-              </Badge>
-            </div>
 
-            <div className="mt-3 grid grid-cols-2 gap-2 text-xs">
-              <div className="rounded-xl bg-surface-2 p-2.5">
-                <p className="text-[10px] uppercase tracking-wider text-muted">
-                  Active jobs
-                </p>
-                <p className="mt-0.5 font-semibold">{m.activeJobs}</p>
+              <div className="mt-3 grid grid-cols-2 gap-2 text-xs">
+                <div className="rounded-xl bg-surface-2 p-2.5">
+                  <p className="text-[10px] uppercase tracking-wider text-muted">
+                    Active jobs
+                  </p>
+                  <p className="mt-0.5 font-semibold">{counts.active}</p>
+                </div>
+                <div className="rounded-xl bg-surface-2 p-2.5">
+                  <p className="text-[10px] uppercase tracking-wider text-muted">
+                    Today
+                  </p>
+                  <p className="mt-0.5 font-semibold">
+                    {counts.today === 0
+                      ? "None"
+                      : `${counts.today} scheduled`}
+                  </p>
+                </div>
               </div>
-              <div className="rounded-xl bg-surface-2 p-2.5">
-                <p className="text-[10px] uppercase tracking-wider text-muted">
-                  Today
-                </p>
-                <p className="mt-0.5 font-semibold">1 scheduled</p>
-              </div>
-            </div>
 
-            <div className="mt-4 flex gap-2">
-              <button
-                className="flex-1 rounded-xl bg-accent-soft py-2 text-sm font-semibold text-accent"
-                style={{ minHeight: 40 }}
-              >
-                Delegate job
-              </button>
-              <button
-                className="flex-1 rounded-xl bg-surface-2 py-2 text-sm font-semibold text-foreground"
-                style={{ minHeight: 40 }}
-              >
-                View progress
-              </button>
-            </div>
-          </div>
-        ))}
+              <div className="mt-3 flex items-center justify-between text-[12px] font-medium text-accent">
+                <span>View &amp; delegate</span>
+                <span>→</span>
+              </div>
+            </Link>
+          );
+        })}
 
         <button
           type="button"
