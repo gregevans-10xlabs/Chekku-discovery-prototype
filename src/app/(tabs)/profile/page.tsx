@@ -46,12 +46,46 @@ export default function ProfilePage() {
         </div>
       </section>
 
-      <Section title="Compliance vault">
+      <Section title="Performance">
         <div className="space-y-2">
-          {docs.map((d) => (
-            <ComplianceRow key={d.id} doc={d} />
-          ))}
+          <PerformanceRow
+            label="On-time rate"
+            value={`${(state.trade.onTimeRate * 100).toFixed(0)}%`}
+            improvement="Improving to 90% would lift your job volume by ~25%"
+          />
+          <PerformanceRow
+            label="Completion rate"
+            value={`${(state.trade.completionRate * 100).toFixed(0)}%`}
+            improvement="Top 15% in your area — maintain to keep Silver tier"
+          />
+          <PerformanceRow
+            label="Reschedules"
+            value={state.trade.reschedulePeerPercentile}
+            improvement="Reduce further to qualify for Gold tier eligibility"
+          />
         </div>
+      </Section>
+
+      <Section title="Compliance vault">
+        {COMPLIANCE_LAYERS.map((layer) => {
+          const layerDocs = docs.filter((d) => d.layer === layer.id);
+          if (layerDocs.length === 0) return null;
+          return (
+            <div key={layer.id} className="mb-4 last:mb-0">
+              <div className="mb-1.5 flex items-baseline justify-between">
+                <h3 className="text-[11px] font-semibold uppercase tracking-wider text-muted-strong">
+                  {layer.title}
+                </h3>
+                <span className="text-[10px] text-muted-strong">{layer.hint}</span>
+              </div>
+              <div className="space-y-2">
+                {layerDocs.map((d) => (
+                  <ComplianceRow key={d.id} doc={d} />
+                ))}
+              </div>
+            </div>
+          );
+        })}
         <button
           type="button"
           className="mt-3 flex w-full items-center justify-center gap-2 rounded-xl border border-dashed border-border-strong bg-surface py-3 text-sm font-semibold text-muted hover:text-foreground"
@@ -158,6 +192,32 @@ export default function ProfilePage() {
         </div>
       </Section>
     </main>
+  );
+}
+
+const COMPLIANCE_LAYERS: { id: 1 | 2 | 3; title: string; hint: string }[] = [
+  { id: 1, title: "Required to work", hint: "Mandatory" },
+  { id: 2, title: "Unlocks more work", hint: "Client-specific" },
+  { id: 3, title: "Specialist", hint: "Job-type-specific" },
+];
+
+function PerformanceRow({
+  label,
+  value,
+  improvement,
+}: {
+  label: string;
+  value: string;
+  improvement: string;
+}) {
+  return (
+    <div className="rounded-2xl border border-border bg-surface p-4">
+      <div className="flex items-baseline justify-between gap-3">
+        <p className="text-[13px] text-muted">{label}</p>
+        <p className="text-[15px] font-semibold">{value}</p>
+      </div>
+      <p className="mt-1.5 text-[12px] leading-5 text-accent">{improvement}</p>
+    </div>
   );
 }
 

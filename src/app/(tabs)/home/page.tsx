@@ -67,8 +67,38 @@ export default function HomePage() {
         <TomorrowView jobs={tomorrowJobs} dispatch={dispatch} router={router} />
       )}
 
+      <PendingResponsesStrip />
       <ComplianceStrip />
     </main>
+  );
+}
+
+function PendingResponsesStrip() {
+  const { state } = useAppState();
+  const pendingCount = useMemo(
+    () => state.opportunities.filter((o) => o.outcome === "awaiting").length,
+    [state.opportunities],
+  );
+  if (pendingCount === 0) return null;
+  return (
+    <div className="px-5">
+      <Link
+        href="/find-jobs?tab=history"
+        className="flex items-center justify-between rounded-2xl border border-border bg-surface p-4"
+      >
+        <div>
+          <p className="text-[11px] font-semibold uppercase tracking-wider text-muted">
+            Pending
+          </p>
+          <p className="mt-0.5 text-sm font-medium">
+            <span className="font-semibold text-foreground">{pendingCount}</span>{" "}
+            {pendingCount === 1 ? "response" : "responses"} awaiting Circl's
+            decision
+          </p>
+        </div>
+        <span className="text-muted">→</span>
+      </Link>
+    </div>
   );
 }
 

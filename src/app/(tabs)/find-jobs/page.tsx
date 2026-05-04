@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { Suspense, useMemo, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { useAppState } from "@/lib/state/AppStateProvider";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { Badge } from "@/components/ui/Badge";
@@ -17,8 +18,18 @@ const SORT_LABELS: { key: SortKey; label: string }[] = [
 ];
 
 export default function FindJobsPage() {
+  return (
+    <Suspense fallback={null}>
+      <FindJobsInner />
+    </Suspense>
+  );
+}
+
+function FindJobsInner() {
   const { state } = useAppState();
-  const [tab, setTab] = useState<"available" | "history">("available");
+  const searchParams = useSearchParams();
+  const initialTab = searchParams.get("tab") === "history" ? "history" : "available";
+  const [tab, setTab] = useState<"available" | "history">(initialTab);
   const [sort, setSort] = useState<SortKey>("distance");
 
   const history = useMemo(() => {

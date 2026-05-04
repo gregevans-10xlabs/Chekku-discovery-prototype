@@ -150,6 +150,20 @@ export function getComplianceDocs(): ComplianceDocument[] {
       unlocks: "Complete First Aid to unlock $12,400 of Harvey Norman work in your area",
       layer: 2,
     },
+    {
+      id: "qbe-induction",
+      name: "QBE Repair Network Induction",
+      status: "Not Started",
+      unlocks: "Complete to unlock ~$18,000 of insurance repair work in your area",
+      layer: 2,
+    },
+    {
+      id: "solar-pv-endorsement",
+      name: "Solar / Roof-top PV Endorsement",
+      status: "Not Started",
+      unlocks: "Required for premium-tier solar installs — adds ~$22,000/year for trades in your area",
+      layer: 3,
+    },
   ];
 }
 
@@ -867,13 +881,17 @@ const OPPORTUNITY_FILLERS: Array<{
   scope: string;
   urgent?: boolean;
   longerJobHint?: string;
+  // For demo realism: a couple of opportunities the trade has already
+  // responded to and is awaiting Circl's decision on.
+  outcome?: "awaiting" | "selected" | "not-selected";
+  responded?: { mode: "accept" | "propose-date" | "propose-rate"; value: number };
 }> = [
   // Today (extra fills, beyond OP-9011)
   { suburb: "Redfern NSW", distanceKm: 2.4, type: "Starlink Installation", dayOffset: 0, timeOfDay: "Afternoon", value: 320, customer: { firstName: "Aiden", lastNameInitial: "M", rating: 4.6 }, scope: "Standard Starlink residential installation — apartment balcony mount." },
   { suburb: "Pyrmont NSW", distanceKm: 2.5, type: "TV/AV Installation", dayOffset: 0, timeOfDay: "Evening", value: 195, customer: { firstName: "Sophia", lastNameInitial: "L", rating: 4.8 }, scope: "55″ TV wall mount, brick wall — masonry anchors required.", urgent: true },
   { suburb: "Glebe NSW", distanceKm: 3.0, type: "Starlink Installation", dayOffset: 0, timeOfDay: "Evening", value: 320, customer: { firstName: "Marcus", lastNameInitial: "B", rating: 4.5 }, scope: "Standard Starlink residential installation." },
   // +1 day (this week)
-  { suburb: "Bondi Junction NSW", distanceKm: 4.6, type: "TV/AV Installation", dayOffset: 1, timeOfDay: "Morning", value: 215, customer: { firstName: "Hannah", lastNameInitial: "F", rating: 4.7 }, scope: "65″ TV wall mount + soundbar." },
+  { suburb: "Bondi Junction NSW", distanceKm: 4.6, type: "TV/AV Installation", dayOffset: 1, timeOfDay: "Morning", value: 215, customer: { firstName: "Hannah", lastNameInitial: "F", rating: 4.7 }, scope: "65″ TV wall mount + soundbar.", outcome: "awaiting", responded: { mode: "accept", value: 215 } },
   { suburb: "Bronte NSW", distanceKm: 4.0, type: "Starlink Installation", dayOffset: 1, timeOfDay: "Morning", value: 338.8, customer: { firstName: "Daniel", lastNameInitial: "S", rating: 4.9 }, scope: "Standard Starlink residential installation." },
   { suburb: "Erskineville NSW", distanceKm: 4.0, type: "TV/AV Installation", dayOffset: 1, timeOfDay: "Afternoon", value: 185, customer: { firstName: "Chloe", lastNameInitial: "P", rating: 4.6 }, scope: "55″ TV wall mount + cable concealment." },
   { suburb: "Maroubra NSW", distanceKm: 7.2, type: "Starlink Installation", dayOffset: 1, timeOfDay: "Afternoon", value: 320, customer: { firstName: "Ethan", lastNameInitial: "W", rating: 4.4 }, scope: "Standard Starlink residential installation." },
@@ -895,7 +913,7 @@ const OPPORTUNITY_FILLERS: Array<{
   { suburb: "Hurstville NSW", distanceKm: 14.5, type: "Starlink Installation", dayOffset: 4, timeOfDay: "Afternoon", value: 320, customer: { firstName: "Mila", lastNameInitial: "X", rating: 4.6 }, scope: "Standard Starlink residential installation." },
   { suburb: "Ryde NSW", distanceKm: 13.5, type: "TV/AV Installation", dayOffset: 4, timeOfDay: "Afternoon", value: 245, customer: { firstName: "Levi", lastNameInitial: "Q", rating: 4.7 }, scope: "65″ TV wall mount + cable concealment." },
   // +5 days (alongside OP-9014)
-  { suburb: "Eastwood NSW", distanceKm: 16.3, type: "Starlink Installation", dayOffset: 5, timeOfDay: "Morning", value: 338.8, customer: { firstName: "Ruby", lastNameInitial: "M", rating: 4.8 }, scope: "Standard Starlink residential installation." },
+  { suburb: "Eastwood NSW", distanceKm: 16.3, type: "Starlink Installation", dayOffset: 5, timeOfDay: "Morning", value: 338.8, customer: { firstName: "Ruby", lastNameInitial: "M", rating: 4.8 }, scope: "Standard Starlink residential installation.", outcome: "awaiting", responded: { mode: "propose-rate", value: 365 } },
   { suburb: "Kogarah NSW", distanceKm: 13.4, type: "TV/AV Installation", dayOffset: 5, timeOfDay: "Afternoon", value: 215, customer: { firstName: "Mason", lastNameInitial: "V", rating: 4.6 }, scope: "65″ TV wall mount + soundbar." },
   { suburb: "Epping NSW", distanceKm: 17.5, type: "Starlink Installation", dayOffset: 5, timeOfDay: "Afternoon", value: 320, customer: { firstName: "Lily", lastNameInitial: "N", rating: 4.7 }, scope: "Standard Starlink residential installation." },
   // +6 days
@@ -966,6 +984,8 @@ export function getOpportunities(): Opportunity[] {
       f.type === "Starlink Installation" ? STARLINK_COMPLIANCE : TVAV_COMPLIANCE,
     urgent: f.urgent,
     longerJobHint: f.longerJobHint,
+    outcome: f.outcome,
+    responded: f.responded,
   }));
 
   return [...canonical, ...fillers];
