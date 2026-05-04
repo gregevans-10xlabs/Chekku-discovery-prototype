@@ -136,18 +136,21 @@ export default function MoneyPage() {
         </div>
       </section>
 
-      {/* Recent settlements */}
+      {/* Recent RCTIs */}
       <section className="mt-6 px-5">
         <div className="mb-2 flex items-baseline justify-between">
           <h2 className="text-xs font-semibold uppercase tracking-wider text-muted">
-            Recent settlements
+            Recent RCTIs{" "}
+            {settlements.length > 0 ? (
+              <span className="text-muted-strong">({settlements.length})</span>
+            ) : null}
           </h2>
-          {settlements.length > 0 ? (
+          {settlements.length > 5 ? (
             <Link
               href="/money/rctis"
               className="text-[11px] font-medium text-accent"
             >
-              View all RCTIs →
+              View all →
             </Link>
           ) : null}
         </div>
@@ -299,8 +302,12 @@ function SettlementRow({ job }: { job: Job }) {
           <p className="text-[11px] uppercase tracking-wider text-muted">
             {job.client} · {job.cgNumber}
           </p>
-          <p className="mt-0.5 text-[14px] font-semibold">{job.type}</p>
-          <p className="mt-0.5 text-xs text-muted">{job.customer.suburb}</p>
+          <p className="mt-0.5 text-[14px] font-semibold">
+            {job.rctiNumber ?? "RCTI pending"}
+          </p>
+          <p className="mt-0.5 text-xs text-muted">
+            {job.type} · {job.customer.suburb}
+          </p>
         </div>
         <p className="shrink-0 text-[16px] font-bold text-accent">
           ${job.value.toFixed(2)}

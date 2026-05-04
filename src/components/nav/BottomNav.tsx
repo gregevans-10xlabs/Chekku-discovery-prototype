@@ -14,6 +14,7 @@ const items: Item[] = [
   { href: "/home", label: "Home", icon: <IconHome /> },
   { href: "/schedule", label: "Schedule", icon: <IconCalendar /> },
   { href: "/find-jobs", label: "Find Jobs", icon: <IconSearch /> },
+  { href: "/money", label: "Money", icon: <IconMoney /> },
   { href: "/profile", label: "Profile", icon: <IconUser /> },
 ];
 
@@ -113,6 +114,19 @@ function IconUser() {
         d="M4 21c0-4 3.6-7 8-7s8 3 8 7"
         stroke="currentColor"
         strokeWidth="2"
+        strokeLinecap="round"
+      />
+    </svg>
+  );
+}
+function IconMoney() {
+  return (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+      <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="2" />
+      <path
+        d="M14.5 9.5c0-1-1-1.8-2.5-1.8s-2.5.8-2.5 1.8.8 1.5 2.5 1.8 2.5.8 2.5 1.8-1 1.8-2.5 1.8-2.5-.8-2.5-1.8M12 6.5v1.2M12 16.3v1.2"
+        stroke="currentColor"
+        strokeWidth="1.8"
         strokeLinecap="round"
       />
     </svg>
