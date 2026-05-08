@@ -336,7 +336,7 @@ export default function SacPage({
               </p>
               <a
                 href="tel:+61280000000"
-                className="mt-3 inline-flex items-center gap-2 rounded-xl bg-danger px-4 py-2 text-sm font-semibold text-white"
+                className="mt-3 inline-flex items-center gap-2 rounded-xl bg-danger px-5 py-2 text-sm font-semibold text-white"
               >
                 Call Circl Support
               </a>
@@ -543,7 +543,7 @@ export default function SacPage({
                 </p>
                 <a
                   href="tel:+61280000000"
-                  className="mt-3 inline-flex items-center gap-2 rounded-xl bg-danger px-4 py-2 text-sm font-semibold text-white"
+                  className="mt-3 inline-flex items-center gap-2 rounded-xl bg-danger px-5 py-2 text-sm font-semibold text-white"
                 >
                   Call Circl Support
                 </a>

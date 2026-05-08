@@ -117,7 +117,7 @@ export default function ReschedulePage({
   return (
     <main className="flex min-h-screen flex-col bg-background">
       <header className="sticky top-0 z-20 border-b border-border bg-background/95 backdrop-blur">
-        <div className="flex items-center gap-2 px-4 pt-[env(safe-area-inset-top,0.5rem)] pb-2">
+        <div className="flex items-center gap-2 px-5 pt-[env(safe-area-inset-top,0.5rem)] pb-2">
           <button
             type="button"
             onClick={() => router.push(`/jobs/${id}`)}
@@ -146,7 +146,7 @@ export default function ReschedulePage({
 
       <section className="flex-1 pb-4">
         {/* Current slot */}
-        <div className="px-4 pt-4">
+        <div className="px-5 pt-4">
           <div className="rounded-2xl border border-border bg-surface p-4">
             <p className="text-[11px] font-semibold uppercase tracking-wider text-muted">
               Current date
@@ -162,7 +162,7 @@ export default function ReschedulePage({
         </div>
 
         {/* Calendar */}
-        <div className="px-4 pt-4">
+        <div className="px-5 pt-4">
           <div className="rounded-2xl border border-border bg-surface p-3">
             <div className="mb-2 flex items-center justify-between">
               <button
@@ -270,7 +270,7 @@ export default function ReschedulePage({
         </div>
 
         {/* Time of day */}
-        <div className="px-4 pt-4">
+        <div className="px-5 pt-4">
           <label className="text-[11px] font-semibold uppercase tracking-wider text-muted">
             Time of day
           </label>
@@ -295,7 +295,7 @@ export default function ReschedulePage({
         </div>
 
         {/* Reason */}
-        <div className="px-4 pt-4">
+        <div className="px-5 pt-4">
           <label
             htmlFor="reason"
             className="text-[11px] font-semibold uppercase tracking-wider text-muted"
@@ -306,7 +306,7 @@ export default function ReschedulePage({
             id="reason"
             value={reason}
             onChange={(e) => setReason(e.target.value)}
-            className="mt-1.5 w-full appearance-none rounded-xl border border-border-strong bg-surface px-4 py-3.5 text-[15px] text-foreground focus:border-accent focus:outline-none"
+            className="mt-1.5 w-full appearance-none rounded-xl border border-border-strong bg-surface px-5 py-3.5 text-[15px] text-foreground focus:border-accent focus:outline-none"
           >
             <option value="" disabled>
               Choose a reason…
@@ -320,7 +320,7 @@ export default function ReschedulePage({
         </div>
 
         {/* Note */}
-        <div className="px-4 pt-4">
+        <div className="px-5 pt-4">
           <label
             htmlFor="note"
             className="text-[11px] font-semibold uppercase tracking-wider text-muted"
@@ -336,7 +336,7 @@ export default function ReschedulePage({
             onChange={(e) => setNote(e.target.value)}
             rows={3}
             placeholder="Anything Circl should know about this change."
-            className="mt-1.5 w-full rounded-xl border border-border-strong bg-surface px-4 py-3 text-[14px] text-foreground focus:border-accent focus:outline-none"
+            className="mt-1.5 w-full rounded-xl border border-border-strong bg-surface px-5 py-3 text-[14px] text-foreground focus:border-accent focus:outline-none"
           />
         </div>
       </section>

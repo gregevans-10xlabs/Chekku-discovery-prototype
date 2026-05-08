@@ -60,7 +60,7 @@ export default function JobDetail({
       />
 
       {/* Status strip */}
-      <section className="px-4 pt-4">
+      <section className="px-5 pt-4">
         <div className="flex flex-wrap gap-2">
           {jobDone ? <Badge tone="success">Completed</Badge> : null}
           {checkedIn && !jobDone ? <Badge tone="accent">In progress</Badge> : null}
@@ -68,9 +68,68 @@ export default function JobDetail({
         </div>
       </section>
 
+      {/* AI surface — contextual to this specific job. Static stub for
+          Phase 2; Phase 3 wires job-context-aware AI for prep, scope,
+          photos, compliance, missing-info prompts. */}
+      {!jobDone ? (
+        <section className="mt-4 px-5">
+          <div className="rounded-2xl border border-border bg-surface p-3 [box-shadow:0_1px_2px_rgba(15,20,25,0.04)]">
+            <div className="flex items-center gap-2.5 rounded-xl border border-border bg-background py-1 pl-3.5 pr-1">
+              <svg
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                className="shrink-0 text-accent"
+                aria-hidden="true"
+              >
+                <path
+                  d="M12 3v3M12 18v3M3 12h3M18 12h3M5.5 5.5l2.1 2.1M16.4 16.4l2.1 2.1M5.5 18.5l2.1-2.1M16.4 7.6l2.1-2.1"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                />
+                <circle cx="12" cy="12" r="3" fill="currentColor" />
+              </svg>
+              <input
+                type="text"
+                placeholder={`Ask about ${job.cgNumber}…`}
+                className="flex-1 bg-transparent py-2.5 text-[14px] outline-none"
+                disabled
+              />
+              <button
+                type="button"
+                disabled
+                className="rounded-lg bg-accent px-5 py-2.5 text-[14px] font-semibold text-white disabled:opacity-100"
+                style={{ minHeight: 40 }}
+              >
+                Ask
+              </button>
+            </div>
+            <div className="mt-2.5 flex flex-wrap gap-2">
+              {[
+                "Prep checklist",
+                "What photos do I need?",
+                "Compliance for this job",
+              ].map((c) => (
+                <button
+                  key={c}
+                  type="button"
+                  disabled
+                  className="rounded-full border border-accent/30 bg-accent-soft px-3 py-1.5 text-[12px] font-semibold text-accent-strong"
+                  style={{ minHeight: 32 }}
+                >
+                  {c}
+                </button>
+              ))}
+            </div>
+          </div>
+        </section>
+      ) : null}
+
       {/* Equipment status + tracking (only for jobs where equipment ships) */}
       {job.equipmentDeliveryStatus !== "N/A" ? (
-        <section className="mt-3 px-4">
+        <section className="mt-3 px-5">
           <div
             className={
               "rounded-2xl border p-4 " +
@@ -134,7 +193,7 @@ export default function JobDetail({
 
       {/* Attendance prompt — surfaces when the trade hasn't yet confirmed */}
       {!jobDone && job.attendance === "Pending" ? (
-        <section className="mt-3 px-4">
+        <section className="mt-3 px-5">
           <div className="rounded-2xl border border-warn/40 bg-warn-soft p-4">
             <p className="text-sm font-semibold text-warn">
               Confirm your attendance
@@ -175,7 +234,7 @@ export default function JobDetail({
       ) : null}
 
       {!jobDone && job.attendance === "Unable" ? (
-        <section className="mt-3 px-4">
+        <section className="mt-3 px-5">
           <div className="rounded-2xl border border-danger/40 bg-danger/10 p-4 text-sm font-semibold text-danger">
             Marked unable to attend — Circl Support has been notified.
           </div>
@@ -183,7 +242,7 @@ export default function JobDetail({
       ) : null}
 
       {/* Customer */}
-      <section className="mt-4 space-y-2 px-4">
+      <section className="mt-4 space-y-2 px-5">
         <div className="rounded-2xl border border-border bg-surface p-4">
           <p className="text-[11px] font-semibold uppercase tracking-wider text-muted">
             Customer
@@ -232,7 +291,7 @@ export default function JobDetail({
 
       {/* Pickup location (HN) */}
       {job.pickupLocation ? (
-        <section className="mt-3 px-4">
+        <section className="mt-3 px-5">
           <div className="rounded-2xl border border-info/30 bg-info/10 p-4">
             <p className="text-[11px] font-semibold uppercase tracking-wider text-info">
               Pickup before attending
@@ -248,7 +307,7 @@ export default function JobDetail({
       ) : null}
 
       {/* Scope */}
-      <section className="mt-3 px-4">
+      <section className="mt-3 px-5">
         <div className="rounded-2xl border border-border bg-surface p-4">
           <p className="text-[11px] font-semibold uppercase tracking-wider text-muted">
             Work Order {job.workOrder}
@@ -260,7 +319,7 @@ export default function JobDetail({
       </section>
 
       {/* Job workflow */}
-      <section className="mt-5 px-4">
+      <section className="mt-5 px-5">
         <h2 className="mb-2 text-xs font-semibold uppercase tracking-wider text-muted">
           Job workflow
         </h2>
@@ -307,7 +366,7 @@ export default function JobDetail({
       </section>
 
       {/* Job complete gate */}
-      <section className="mt-6 px-4">
+      <section className="mt-6 px-5">
         {jobDone ? (
           <div className="rounded-2xl border border-success/40 bg-success-soft p-5 text-center">
             <p className="text-2xl">✓</p>
@@ -332,7 +391,7 @@ export default function JobDetail({
 
       {/* RCTI shortcut — only when the job has reached RCTI Generated or beyond */}
       {jobDone && job.rctiNumber ? (
-        <section className="mt-3 px-4">
+        <section className="mt-3 px-5">
           <Link
             href={`/money/rcti/${job.id}`}
             className="flex items-center justify-between rounded-2xl border border-border bg-surface p-4"
@@ -358,7 +417,7 @@ export default function JobDetail({
 
       {/* Schedule history */}
       {job.events && job.events.length > 0 ? (
-        <section className="mt-6 px-4">
+        <section className="mt-6 px-5">
           <h2 className="mb-2 text-xs font-semibold uppercase tracking-wider text-muted">
             Schedule history
           </h2>
@@ -391,7 +450,7 @@ export default function JobDetail({
         </section>
       ) : null}
 
-      <section className="mt-6 px-4">
+      <section className="mt-6 px-5">
         {job.client === "Harvey Norman" ? (
           <div className="rounded-xl bg-surface p-3 text-xs text-muted">
             Reschedules aren’t available for Harvey Norman jobs — dates are
