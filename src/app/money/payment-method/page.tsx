@@ -92,7 +92,7 @@ export default function PaymentMethodPage() {
 
         <div className="mt-4">
           <label className="text-xs font-medium text-muted">Card number</label>
-          <div className="mt-1 rounded-2xl border border-border-strong bg-surface px-4 py-3.5 focus-within:border-accent">
+          <div className="mt-1 rounded-2xl border border-border-strong bg-surface px-5 py-3.5 focus-within:border-accent">
             <input
               inputMode="numeric"
               value={cardNumber}
@@ -107,7 +107,7 @@ export default function PaymentMethodPage() {
           <label className="text-xs font-medium text-muted">
             Expiry (MM/YY)
           </label>
-          <div className="mt-1 w-32 rounded-2xl border border-border-strong bg-surface px-4 py-3.5 focus-within:border-accent">
+          <div className="mt-1 w-32 rounded-2xl border border-border-strong bg-surface px-5 py-3.5 focus-within:border-accent">
             <input
               inputMode="numeric"
               value={expiry}

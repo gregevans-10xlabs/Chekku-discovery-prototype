@@ -65,7 +65,7 @@ export default function SchedulePage() {
     <main className="pb-6">
       <PageHeader title="Schedule" subtitle={`${jobs.length} accepted jobs`} />
 
-      <div className="sticky top-[60px] z-10 bg-background/95 px-4 pt-2 backdrop-blur">
+      <div className="sticky top-[60px] z-10 bg-background/95 px-5 pt-2 backdrop-blur">
         <div className="flex rounded-xl bg-surface p-1">
           <button
             type="button"
@@ -97,7 +97,7 @@ export default function SchedulePage() {
       </div>
 
       {view === "list" ? (
-        <div className="space-y-5 px-4 pt-4">
+        <div className="space-y-5 px-5 pt-4">
           {sections.map((section) =>
             section.jobs.length === 0 ? null : (
               <SectionGroup key={section.key} section={section} />
@@ -188,7 +188,7 @@ function JobListRow({ job }: { job: Job }) {
           href={job.tracking.url}
           target="_blank"
           rel="noopener noreferrer"
-          className="flex items-center justify-between border-t border-warn/30 bg-warn-soft/50 px-4 py-2.5 text-[12px] font-semibold text-warn"
+          className="flex items-center justify-between border-t border-warn/30 bg-warn-soft/50 px-5 py-2.5 text-[12px] font-semibold text-warn"
         >
           <span>📦 Track {job.tracking.carrier} · {job.tracking.number}</span>
           <span>→</span>
@@ -243,7 +243,7 @@ function CalendarView({ jobs }: { jobs: Job[] }) {
   const selectedDate = selectedKey ? parseDateKey(selectedKey) : null;
 
   return (
-    <div className="px-4 pt-4">
+    <div className="px-5 pt-4">
       <div className="rounded-2xl border border-border bg-surface p-3">
         <div className="mb-2 flex items-center justify-between">
           <button

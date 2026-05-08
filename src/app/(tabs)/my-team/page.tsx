@@ -88,7 +88,7 @@ export default function MyTeamPage() {
       />
 
       {/* Team-wide aggregate */}
-      <section className="px-4 pt-4">
+      <section className="px-5 pt-4">
         <div className="rounded-2xl border border-border bg-surface p-4">
           <p className="text-[11px] font-semibold uppercase tracking-wider text-muted">
             Team activity
@@ -114,7 +114,7 @@ export default function MyTeamPage() {
 
       {/* Recent invite confirmation */}
       {inviteSentName ? (
-        <section className="mt-3 px-4">
+        <section className="mt-3 px-5">
           <div className="rounded-2xl border border-success/30 bg-success-soft p-3">
             <p className="text-[12px] font-semibold text-success">
               ✓ Invite sent to {inviteSentName}
@@ -127,7 +127,7 @@ export default function MyTeamPage() {
         </section>
       ) : null}
 
-      <section className="space-y-3 px-4 pt-4">
+      <section className="space-y-3 px-5 pt-4">
         {team.members.map((m) => {
           const counts =
             assignedCounts[m.id] ??

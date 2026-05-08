@@ -234,7 +234,7 @@ export default function AvailabilityPage() {
               onChange={(e) => setNote(e.target.value)}
               placeholder="e.g. back Friday"
               maxLength={60}
-              className="w-full rounded-2xl border border-border-strong bg-surface px-4 py-3.5 text-[15px] outline-none focus:border-accent"
+              className="w-full rounded-2xl border border-border-strong bg-surface px-5 py-3.5 text-[15px] outline-none focus:border-accent"
             />
           </section>
 

@@ -117,7 +117,7 @@ export default function TaxSettingsPage() {
           <p className="text-[11px] font-semibold uppercase tracking-wider text-muted">
             Trading name (on your RCTIs)
           </p>
-          <div className="mt-2 rounded-2xl border border-border-strong bg-surface px-4 py-3.5 focus-within:border-accent">
+          <div className="mt-2 rounded-2xl border border-border-strong bg-surface px-5 py-3.5 focus-within:border-accent">
             <input
               value={tradingName}
               onChange={(e) => setTradingName(e.target.value)}

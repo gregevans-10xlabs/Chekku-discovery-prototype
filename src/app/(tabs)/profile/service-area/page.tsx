@@ -83,7 +83,7 @@ export default function ServiceAreaPage() {
               setPicked(null);
             }}
             placeholder="Newcastle, 2300…"
-            className="mt-1 w-full rounded-2xl border border-border-strong bg-surface px-4 py-3.5 text-[15px] outline-none focus:border-accent"
+            className="mt-1 w-full rounded-2xl border border-border-strong bg-surface px-5 py-3.5 text-[15px] outline-none focus:border-accent"
           />
           {matches.length > 0 ? (
             <div className="mt-2 overflow-hidden rounded-2xl border border-border bg-surface">
@@ -92,7 +92,7 @@ export default function ServiceAreaPage() {
                   key={s.suburb}
                   type="button"
                   onClick={() => pick(s)}
-                  className="flex w-full items-center justify-between border-b border-border px-4 py-3 text-left last:border-b-0 hover:bg-surface-2"
+                  className="flex w-full items-center justify-between border-b border-border px-5 py-3 text-left last:border-b-0 hover:bg-surface-2"
                 >
                   <span className="font-medium">{s.suburb}</span>
                   <span className="text-xs text-muted">{s.postcode}</span>
