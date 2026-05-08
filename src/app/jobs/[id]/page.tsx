@@ -1,13 +1,15 @@
 "use client";
 
-import { use } from "react";
+import { use, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useAppState } from "@/lib/state/AppStateProvider";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
-import { relativeDayLabel } from "@/lib/demo-data";
+import { getComplianceDocs, relativeDayLabel } from "@/lib/demo-data";
+import AskAI from "@/components/AskAI";
+import { jobContext } from "@/lib/ai/contexts";
 
 export default function JobDetail({
   params,
@@ -68,62 +70,19 @@ export default function JobDetail({
         </div>
       </section>
 
-      {/* AI surface — contextual to this specific job. Static stub for
-          Phase 2; Phase 3 wires job-context-aware AI for prep, scope,
-          photos, compliance, missing-info prompts. */}
+      {/* AI surface — contextual to this specific job. Real AskAI
+          (Phase 3) with full job-context: scope, customer, equipment,
+          SAC/IR state, compliance gates. Hidden when job is already
+          Completed (no Q&A needed retrospectively). */}
       {!jobDone ? (
         <section className="mt-4 px-5">
-          <div className="rounded-2xl border border-border bg-surface p-3 [box-shadow:0_1px_2px_rgba(15,20,25,0.04)]">
-            <div className="flex items-center gap-2.5 rounded-xl border border-border bg-background py-1 pl-3.5 pr-1">
-              <svg
-                width="20"
-                height="20"
-                viewBox="0 0 24 24"
-                fill="none"
-                className="shrink-0 text-accent"
-                aria-hidden="true"
-              >
-                <path
-                  d="M12 3v3M12 18v3M3 12h3M18 12h3M5.5 5.5l2.1 2.1M16.4 16.4l2.1 2.1M5.5 18.5l2.1-2.1M16.4 7.6l2.1-2.1"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                />
-                <circle cx="12" cy="12" r="3" fill="currentColor" />
-              </svg>
-              <input
-                type="text"
-                placeholder={`Ask about ${job.cgNumber}…`}
-                className="flex-1 bg-transparent py-2.5 text-[14px] outline-none"
-                disabled
-              />
-              <button
-                type="button"
-                disabled
-                className="rounded-lg bg-accent px-5 py-2.5 text-[14px] font-semibold text-white disabled:opacity-100"
-                style={{ minHeight: 40 }}
-              >
-                Ask
-              </button>
-            </div>
-            <div className="mt-2.5 flex flex-wrap gap-2">
-              {[
-                "Prep checklist",
-                "What photos do I need?",
-                "Compliance for this job",
-              ].map((c) => (
-                <button
-                  key={c}
-                  type="button"
-                  disabled
-                  className="rounded-full border border-accent/30 bg-accent-soft px-3 py-1.5 text-[12px] font-semibold text-accent-strong"
-                  style={{ minHeight: 32 }}
-                >
-                  {c}
-                </button>
-              ))}
-            </div>
-          </div>
+          <JobAskAI
+            jobId={job.id}
+            cgNumber={job.cgNumber}
+            sacDone={sacDone}
+            irDone={irDone}
+            checkedIn={checkedIn}
+          />
         </section>
       ) : null}
 
@@ -529,3 +488,48 @@ function WorkflowStep({
   return inner;
 }
 
+
+function JobAskAI({
+  jobId,
+  cgNumber,
+  sacDone,
+  irDone,
+  checkedIn,
+}: {
+  jobId: string;
+  cgNumber: string;
+  sacDone: boolean;
+  irDone: boolean;
+  checkedIn: boolean;
+}) {
+  const { state } = useAppState();
+  const docs = getComplianceDocs();
+  const context = useMemo(
+    () => jobContext(state, docs, jobId, { sacDone, irDone, checkedIn }),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [state.trade, state.jobs, jobId, sacDone, irDone, checkedIn],
+  );
+  return (
+    <AskAI
+      context={context}
+      placeholder={`Ask about ${cgNumber}…`}
+      suggestions={[
+        {
+          label: "Prep checklist",
+          question:
+            "What do I need to bring and check before I leave for this job?",
+        },
+        {
+          label: "What photos do I need?",
+          question:
+            "Which photos does the Installation Report require for this job type?",
+        },
+        {
+          label: "Compliance for this job",
+          question:
+            "Which compliance items does this specific job require, and which do I have? Anything I need to upload before I attend?",
+        },
+      ]}
+    />
+  );
+}

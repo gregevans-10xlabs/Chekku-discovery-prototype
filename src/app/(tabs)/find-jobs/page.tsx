@@ -6,8 +6,10 @@ import { useSearchParams } from "next/navigation";
 import { useAppState } from "@/lib/state/AppStateProvider";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { Badge } from "@/components/ui/Badge";
-import { relativeDayLabel } from "@/lib/demo-data";
+import { getComplianceDocs, relativeDayLabel } from "@/lib/demo-data";
 import type { Opportunity } from "@/lib/types";
+import AskAI from "@/components/AskAI";
+import { findJobsContext } from "@/lib/ai/contexts";
 
 type SortKey = "distance" | "soonest" | "value";
 
@@ -109,46 +111,10 @@ function FindJobsInner() {
         </section>
       ) : null}
 
-      {/* AI surface — contextual to Find Jobs. Static stub for Phase 2;
-          Phase 3 wires the real /api/anthropic proxy + AskAI port with
-          opportunity-board context (eligibility, matching, etc.). */}
+      {/* AI surface — contextual to Find Jobs. Real AskAI (Phase 3) with
+          opportunity-board context for eligibility / matching questions. */}
       <section className="px-5 pt-3">
-        <div className="rounded-2xl border border-border bg-surface p-3 [box-shadow:0_1px_2px_rgba(15,20,25,0.04)]">
-          <div className="flex items-center gap-2.5 rounded-xl border border-border bg-background py-1 pl-3.5 pr-1">
-            <SparkleIcon />
-            <input
-              type="text"
-              placeholder="Ask about these jobs…"
-              className="flex-1 bg-transparent py-2.5 text-[14px] outline-none"
-              disabled
-            />
-            <button
-              type="button"
-              disabled
-              className="rounded-lg bg-accent px-4 py-2.5 text-[14px] font-semibold text-white disabled:opacity-100"
-              style={{ minHeight: 40 }}
-            >
-              Ask
-            </button>
-          </div>
-          <div className="mt-2.5 flex flex-wrap gap-2">
-            {[
-              "Why can't I take this?",
-              "Best fit for my skills",
-              "What pays best near me?",
-            ].map((c) => (
-              <button
-                key={c}
-                type="button"
-                disabled
-                className="rounded-full border border-accent/30 bg-accent-soft px-3 py-1.5 text-[12px] font-semibold text-accent-strong"
-                style={{ minHeight: 32 }}
-              >
-                {c}
-              </button>
-            ))}
-          </div>
-        </div>
+        <FindJobsAskAI />
       </section>
 
       <div className="sticky top-[60px] z-10 bg-background/95 px-5 pt-3 backdrop-blur">
@@ -370,23 +336,35 @@ function EmptyState() {
   );
 }
 
-function SparkleIcon() {
+function FindJobsAskAI() {
+  const { state } = useAppState();
+  const docs = getComplianceDocs();
+  const context = useMemo(
+    () => findJobsContext(state, docs),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [state.trade, state.opportunities],
+  );
   return (
-    <svg
-      width="20"
-      height="20"
-      viewBox="0 0 24 24"
-      fill="none"
-      className="shrink-0 text-accent"
-      aria-hidden="true"
-    >
-      <path
-        d="M12 3v3M12 18v3M3 12h3M18 12h3M5.5 5.5l2.1 2.1M16.4 16.4l2.1 2.1M5.5 18.5l2.1-2.1M16.4 7.6l2.1-2.1"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-      />
-      <circle cx="12" cy="12" r="3" fill="currentColor" />
-    </svg>
+    <AskAI
+      context={context}
+      placeholder="Ask about these jobs…"
+      suggestions={[
+        {
+          label: "Why can't I take this?",
+          question:
+            "Are any opportunities here filtered out by my compliance? Which ones, and what would I need to take them?",
+        },
+        {
+          label: "Best fit for my skills",
+          question:
+            "Which of these opportunities are the best fit for my trade types and compliance?",
+        },
+        {
+          label: "What pays best near me?",
+          question:
+            "Which of these opportunities have the best return on travel and time, given they're in my service area?",
+        },
+      ]}
+    />
   );
 }

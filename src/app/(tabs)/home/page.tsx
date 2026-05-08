@@ -34,6 +34,8 @@ import {
   startTimeToMinutes,
 } from "@/lib/demo-data";
 import type { AttendanceConfirmation, Job } from "@/lib/types";
+import AskAI from "@/components/AskAI";
+import { homeContext } from "@/lib/ai/contexts";
 
 type Mode = "morning" | "during" | "evening" | "tomorrow";
 
@@ -218,91 +220,58 @@ function DayTape({
 }
 
 // ---------- AI input (visual centre) ----------
-// Static stub — Phase 3 wires the real /api/anthropic proxy + AskAI
-// port. The shape and prominence are locked here so the surrounding
-// layout reads correctly during review.
+// Real AskAI now (Phase 3). Suggestion chips adapt per mode; the
+// system prompt receives Brett's full home context (today / tomorrow /
+// recent / compliance / opportunities) so the AI can answer questions
+// like "what's near me", "why can't I take this", or "how did I do
+// today" without tool calls.
 function AIInput({ mode }: { mode: Mode }) {
-  const chips: string[] = (() => {
+  const { state } = useAppState();
+  const docs = getComplianceDocs();
+  const context = useMemo(
+    () => homeContext(state, docs),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [state.trade, state.jobs, state.opportunities, state.hasTeam, mode],
+  );
+
+  const suggestions = (() => {
     switch (mode) {
       case "morning":
-        return ["What's near me", "Plan my day", "Why can't I take this?"];
+        return [
+          { label: "What's near me", question: "What jobs are available near me right now?" },
+          { label: "Plan my day", question: "Walk me through today — what should I prep for each job?" },
+          { label: "Why can't I take this?", question: "Are any opportunities currently filtered out by my compliance? Which ones and why?" },
+        ];
       case "during":
         return [
-          "Help with this job",
-          "Photo checklist",
-          "Reschedule the next one",
+          { label: "Help with this job", question: "What do I need to know before I leave the current job?" },
+          { label: "Photo checklist", question: "What photos do I need to capture for this job type?" },
+          { label: "Reschedule the next one", question: "I'm running late — draft a message I can send to the next customer to let them know." },
         ];
       case "evening":
         return [
-          "How did I do today?",
-          "What's tomorrow?",
-          "Anything outstanding?",
+          { label: "How did I do today?", question: "Summarise today — earnings, jobs done, anything outstanding." },
+          { label: "What's tomorrow?", question: "What's on for tomorrow? Any prep I should do tonight?" },
+          { label: "Anything outstanding?", question: "Anything I haven't dealt with yet — pending RCTIs, unresponded opportunities, compliance to-dos?" },
         ];
       case "tomorrow":
         return [
-          "Show me tomorrow",
-          "Compliance for tomorrow",
-          "What's near me tomorrow?",
+          { label: "Show me tomorrow", question: "What's the plan for tomorrow?" },
+          { label: "Compliance for tomorrow", question: "Is my compliance covered for tomorrow's jobs?" },
+          { label: "What's near me tomorrow?", question: "Are there other opportunities tomorrow worth picking up?" },
         ];
     }
   })();
 
   return (
     <section className="px-5 pt-4">
-      <div className="rounded-2xl border border-border bg-surface p-4 [box-shadow:0_1px_2px_rgba(15,20,25,0.04)]">
-        <div className="flex items-center gap-3 rounded-xl border border-border bg-background py-1 pl-4 pr-1">
-          <SparkleIcon />
-          <input
-            type="text"
-            placeholder="Ask Chekku anything…"
-            className="flex-1 bg-transparent py-3 text-[15px] outline-none"
-            disabled
-          />
-          <button
-            type="button"
-            disabled
-            className="rounded-lg bg-accent px-5 py-3 text-[15px] font-semibold text-white disabled:opacity-100"
-            style={{ minHeight: 44 }}
-          >
-            Ask
-          </button>
-        </div>
-        <div className="mt-3 flex flex-wrap gap-2">
-          {chips.map((c) => (
-            <button
-              key={c}
-              type="button"
-              disabled
-              className="rounded-full border border-accent/30 bg-accent-soft px-3.5 py-2 text-[13px] font-semibold text-accent-strong"
-              style={{ minHeight: 36 }}
-            >
-              {c}
-            </button>
-          ))}
-        </div>
-      </div>
-    </section>
-  );
-}
-
-function SparkleIcon() {
-  return (
-    <svg
-      width="22"
-      height="22"
-      viewBox="0 0 24 24"
-      fill="none"
-      className="shrink-0 text-accent"
-      aria-hidden="true"
-    >
-      <path
-        d="M12 3v3M12 18v3M3 12h3M18 12h3M5.5 5.5l2.1 2.1M16.4 16.4l2.1 2.1M5.5 18.5l2.1-2.1M16.4 7.6l2.1-2.1"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
+      <AskAI
+        size="prominent"
+        context={context}
+        placeholder="Ask Chekku anything…"
+        suggestions={suggestions}
       />
-      <circle cx="12" cy="12" r="3" fill="currentColor" />
-    </svg>
+    </section>
   );
 }
 
