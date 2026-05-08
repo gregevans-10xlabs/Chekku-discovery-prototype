@@ -126,7 +126,7 @@ export default function AreaPage() {
 
         <div className="mt-6 rounded-2xl border border-border bg-surface p-5">
           <div className="relative mx-auto flex h-40 w-full items-center justify-center">
-            <div className="absolute inset-0 rounded-xl bg-[radial-gradient(circle_at_center,#1f2937_0,transparent_70%)]" />
+            <div className="absolute inset-0 rounded-xl bg-surface-2/60" />
             <div
               className={
                 "relative rounded-full border-2 border-dashed border-accent/50 bg-accent/10 transition-all"

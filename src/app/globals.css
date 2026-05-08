@@ -1,25 +1,77 @@
 @import "tailwindcss";
 
+/*
+ * Phase 1 visual foundation — Chekku.au-aligned.
+ *
+ * Default theme is LIGHT (research-driven: bright outdoor reading is the
+ * primary trade use case; chekku.au marketing is light). Dark mode is
+ * supported via `prefers-color-scheme` for users with a system dark
+ * preference (better indoor / OLED battery / personal preference).
+ *
+ * Sole chromatic accent is emerald green — sampled from chekku.au CTAs
+ * and the dashboard logo. No secondary brand colors per Chekku style.
+ *
+ * Token names are unchanged from previous (--accent, --surface, etc.)
+ * so existing component classes keep working — they just resolve to
+ * different colors under the new theme.
+ */
+
 :root {
-  --background: #0b0f19;
-  --surface: #111827;
-  --surface-2: #1f2937;
-  --surface-3: #374151;
-  --border: #1f2937;
-  --border-strong: #374151;
-  --foreground: #f9fafb;
-  --muted: #9ca3af;
+  /* ---------- Light (default) ---------- */
+  --background: #ffffff;
+  --surface: #fafafa;
+  --surface-2: #f3f4f6;
+  --surface-3: #e5e7eb;
+  --border: #e5e7eb;
+  --border-strong: #d1d5db;
+  --foreground: #0f1419;
+  --muted: #5c6470;
   --muted-strong: #6b7280;
-  --accent: #f97316;
-  --accent-strong: #ea580c;
-  --accent-soft: rgba(249, 115, 22, 0.12);
-  --success: #22c55e;
-  --success-soft: rgba(34, 197, 94, 0.12);
-  --warn: #f59e0b;
-  --warn-soft: rgba(245, 158, 11, 0.14);
-  --danger: #ef4444;
-  --danger-soft: rgba(239, 68, 68, 0.14);
-  --info: #3b82f6;
+
+  /* Emerald — chekku.au brand accent */
+  --accent: #00a651;
+  --accent-strong: #008541;
+  --accent-soft: #e6f7ee;
+
+  --success: #047857;
+  --success-soft: #d1fae5;
+  --warn: #b45309;
+  --warn-soft: #fef3c7;
+  --danger: #b91c1c;
+  --danger-soft: #fee2e2;
+  --info: #1e40af;
+
+  /* Tinted shadow for primary CTAs (subtle green wash) */
+  --shadow-accent: 0 4px 12px rgba(0, 166, 81, 0.18);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0b0f1a;
+    --surface: #111827;
+    --surface-2: #1f2937;
+    --surface-3: #374151;
+    --border: #1f2937;
+    --border-strong: #374151;
+    --foreground: #f9fafb;
+    --muted: #9ca3af;
+    --muted-strong: #6b7280;
+
+    /* Emerald lifted slightly for AA contrast on dark surfaces */
+    --accent: #00c46a;
+    --accent-strong: #00a651;
+    --accent-soft: rgba(0, 196, 106, 0.12);
+
+    --success: #34d399;
+    --success-soft: rgba(52, 211, 153, 0.12);
+    --warn: #fbbf24;
+    --warn-soft: rgba(251, 191, 36, 0.14);
+    --danger: #f87171;
+    --danger-soft: rgba(248, 113, 113, 0.14);
+    --info: #60a5fa;
+
+    --shadow-accent: 0 4px 14px rgba(0, 196, 106, 0.22);
+  }
 }
 
 @theme inline {
@@ -55,8 +107,9 @@ body {
 }
 
 body {
-  font-family: var(--font-sans), ui-sans-serif, system-ui, -apple-system,
-    "Segoe UI", Roboto, sans-serif;
+  font-family:
+    var(--font-sans), ui-sans-serif, system-ui, -apple-system, "Segoe UI",
+    Roboto, sans-serif;
 }
 
 input,

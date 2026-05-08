@@ -26,7 +26,12 @@ export function SignaturePad({ value, onChange, label = "Sign here" }: Props) {
     ctx.lineWidth = 2;
     ctx.lineCap = "round";
     ctx.lineJoin = "round";
-    ctx.strokeStyle = "#f9fafb";
+    // Read foreground from the live CSS variable so the stroke colour
+    // tracks the active theme (light or dark via prefers-color-scheme).
+    const fg = getComputedStyle(document.documentElement)
+      .getPropertyValue("--foreground")
+      .trim();
+    ctx.strokeStyle = fg || "#0f1419";
 
     if (value) {
       const img = new Image();

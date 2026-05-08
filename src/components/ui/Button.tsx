@@ -9,8 +9,10 @@ const base =
   "inline-flex items-center justify-center gap-2 rounded-2xl px-5 py-3.5 text-base font-semibold transition-colors active:scale-[0.98] disabled:opacity-40 disabled:cursor-not-allowed w-full min-h-[52px]";
 
 const variants: Record<Variant, string> = {
+  // Green-tinted shadow matches the new emerald accent. CSS variable
+  // --shadow-accent adapts per theme (subtle in light, lifted in dark).
   primary:
-    "bg-accent text-white shadow-[0_8px_24px_rgba(249,115,22,0.25)] hover:bg-accent-strong",
+    "bg-accent text-white [box-shadow:var(--shadow-accent)] hover:bg-accent-strong",
   secondary:
     "bg-surface-2 text-foreground border border-border-strong hover:bg-surface-3",
   ghost: "bg-transparent text-muted hover:text-foreground",

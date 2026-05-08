@@ -29,7 +29,12 @@ export const viewport: Viewport = {
   initialScale: 1,
   maximumScale: 1,
   viewportFit: "cover",
-  themeColor: "#0b0f19",
+  // Status-bar tint matches the active theme so the iOS notch blends
+  // with the page background.
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#ffffff" },
+    { media: "(prefers-color-scheme: dark)", color: "#0b0f1a" },
+  ],
 };
 
 export default function RootLayout({
