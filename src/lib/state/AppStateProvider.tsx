@@ -93,9 +93,12 @@ function defaultState(): PersistedState {
     pastOpportunities: getPastOpportunities(),
     selectedJobId: null,
     checkedInJobId: null,
-    // Pre-mark Tom's CG48954 as Safety Check done so the team-visibility chips
-    // show real progress rather than all-empty rows on first open.
-    sacDoneJobIds: ["CG48954"],
+    // Pre-mark Tom's CG48955 as Safety Check done so the team-visibility
+    // chips show real progress rather than all-empty rows on first open.
+    // (CG36110 is Brett's own job — the SWMS-flagged cross-app decision —
+    // and is deliberately NOT pre-marked since the SWMS gap is the
+    // demo's primary jeopardy hook.)
+    sacDoneJobIds: ["CG48955"],
     irDoneJobIds: [],
     dayView: "morning",
     forceOffline: false,
