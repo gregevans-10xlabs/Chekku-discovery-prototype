@@ -63,4 +63,4 @@ enriching Brett's job universe):
 
 | File | Source commit | Date |
 |---|---|---|
-| `trades.ts` | (pre-sync baseline) | 8 May 2026 |
+| `trades.ts` | `f0c2f26` (Sandbar narrative — cross-app demo arc) | 8 May 2026 |
