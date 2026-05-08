@@ -71,7 +71,7 @@ export default function BankAccountPage() {
               autoFocus
               value={accountName}
               onChange={(e) => setAccountName(e.target.value)}
-              placeholder="e.g. Jake Mitchell Trade"
+              placeholder="e.g. Sandbar Electrical Services"
               className="w-full bg-transparent text-[15px] outline-none placeholder:text-muted-strong"
             />
           </div>

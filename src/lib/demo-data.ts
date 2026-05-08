@@ -1,10 +1,41 @@
 import type {
   ComplianceDocument,
+  ComplianceStatus,
   Job,
   Opportunity,
   Team,
   Trade,
 } from "./types";
+import { TRADES as CORETECHX_TRADES } from "./coretechx-data/trades";
+
+// ---------- Cross-app trade record ----------
+// Brett Sandford / Sandbar Electrical Services is the demo trade. The
+// canonical record lives in Mission Control's vendored trades.ts; we
+// derive Brett's identity, performance, and compliance from there so
+// when Aaron sees Sandbar in MC and then opens Chekku, every cross-
+// referenced detail matches. Chekku-specific fields (subscription,
+// bank account, payment method, Chekku-side tier) are hardcoded here
+// because MC's trade record doesn't carry them.
+const SANDBAR = CORETECHX_TRADES.find((t) => t.id === "sandbar-electrical");
+if (!SANDBAR) {
+  // Fail loud during build/dev — vendored data is broken and the rest
+  // of this file relies on Sandbar being present.
+  throw new Error(
+    "Sandbar Electrical Services trade record missing from vendored " +
+      "coretechx-data/trades.ts — run the SYNC.md re-vendor protocol.",
+  );
+}
+
+// "Brett Sandford · 0421 ··· ···" → { fullName, firstName }
+function parseContact(contact: string | undefined): {
+  fullName: string;
+  firstName: string;
+} {
+  const beforeBullet = (contact ?? "").split("·")[0]?.trim() ?? "Brett Sandford";
+  const fullName = beforeBullet || "Brett Sandford";
+  const firstName = fullName.split(/\s+/)[0] || "Brett";
+  return { fullName, firstName };
+}
 
 // All dates are computed from TODAY at runtime so the demo never goes stale.
 export const TODAY = new Date();
@@ -93,90 +124,148 @@ export function startTimeToMinutes(s: string): number {
 }
 
 // ---------- Trade persona ----------
-export const JAKE: Trade = {
-  fullName: "Jake Mitchell",
-  firstName: "Jake",
-  phone: "0412 345 678",
-  abn: "51 824 753 556",
+// Brett Sandford runs Sandbar Electrical Services on the NSW Mid North
+// Coast — antenna installer specialty with electrical capability. He's
+// the demo trade for both prototypes; identity is derived from MC's
+// canonical record so cross-app cross-references stay aligned.
+const { fullName: BRETT_NAME, firstName: BRETT_FIRST } = parseContact(
+  SANDBAR.primaryContact,
+);
+
+export const BRETT: Trade = {
+  fullName: BRETT_NAME,
+  firstName: BRETT_FIRST,
+  // MC anonymises with "0421 ··· ···"; for Chekku the phone needs to
+  // render fully so we hardcode a synthetic Australian mobile that
+  // matches the area-prefix MC partially exposed.
+  phone: "0421 837 462",
+  abn: SANDBAR.abn ?? "12 345 678 901",
   tradeTypes: ["Starlink Installation", "TV / AV Installation"],
-  serviceArea: { suburb: "Newcastle", postcode: "2300", radiusKm: 50 },
+  // Sandbar's region in MC is "NSW Mid North Coast (2428–2440)".
+  // Forster (2428) is the corridor anchor — within 100km radius covers
+  // the whole strip from Bulahdelah to Coffs Harbour fringe.
+  serviceArea: { suburb: "Forster", postcode: "2428", radiusKm: 100 },
   language: "English",
+  // Tier mapped from MC performance: 86% on-time, 94% completion,
+  // 3.9 customer rating, 1 complaint in 90 days → Silver. Gold would
+  // require ≥95% on-time and ≥4.5 rating.
   tier: "Silver",
+  // Established trade on the Year subscription — Aaron's mid-tier
+  // ($518/year guaranteeing $10,000). Brett's real-data narrative is
+  // a working trade with steady volume, not a free-tier newcomer.
   subscription: {
-    tier: "Free",
-    label: "Free tier — $750 of $1,000 allocated",
-    allocatedYTD: 750,
-    cap: 1000,
+    tier: "Year",
+    label: "Year tier — $7,200 of $10,000 allocated this year",
+    allocatedYTD: 7200,
+    cap: 10000,
   },
-  onTimeRate: 0.82,
-  completionRate: 0.96,
-  reschedulePeerPercentile: "Below 40% of area peers",
+  onTimeRate: SANDBAR.performance.onTime,
+  completionRate: SANDBAR.performance.completion,
+  reschedulePeerPercentile: "On par with area peers",
   bankAccount: {
-    accountName: "Jake Mitchell Trade",
-    bsb: "062-001",
-    accountNumber: "12345678",
+    accountName: "Sandbar Electrical Services Pty Ltd",
+    bsb: "082-401",
+    accountNumber: "76483921",
   },
   paymentMethod: {
     brand: "Visa",
-    last4: "4321",
-    expiry: "08/28",
+    last4: "9128",
+    expiry: "11/27",
   },
   gstRegistered: true,
-  tradingName: "Jake Mitchell Trade",
+  tradingName: SANDBAR.name,
 };
 
+// Backwards-compat alias — many imports still reference `JAKE`. New
+// consumers should use BRETT directly. Remove once Phase 2 completes
+// the per-screen rebuild and we can rename imports cleanly.
+export const JAKE = BRETT;
+
 // ---------- Compliance ----------
+// Layer 1 items mirror Sandbar's actual MC compliance record verbatim.
+// SWMS is the demo's primary jeopardy hook — outstanding in MC means
+// expired in Chekku, with a clear "fix me" CTA. The Layer 2 / 3 items
+// below are Chekku-specific opportunities (the "could be earning more"
+// framing) — compliance Brett DOESN'T have but could pursue to unlock
+// new work types. They aren't in MC because MC only models compliance
+// the trade currently holds.
+const MONTH_INDEX: Record<string, number> = {
+  Jan: 0, Feb: 1, Mar: 2, Apr: 3, May: 4, Jun: 5,
+  Jul: 6, Aug: 7, Sep: 8, Oct: 9, Nov: 10, Dec: 11,
+};
+
+const SANDBAR_LAYER_1: ComplianceDocument[] = SANDBAR.compliance.map((c) => {
+  let status: ComplianceStatus;
+  switch (c.status) {
+    case "valid":
+      status = "Active";
+      break;
+    case "expiring":
+      status = "Expiring Soon";
+      break;
+    case "expired":
+    case "outstanding":
+      status = "Expired";
+      break;
+  }
+  // MC carries human-friendly expiry strings ("Mar 2027", "Jul 2026").
+  // Chekku stores ISO dates so date-arithmetic in expiry banners works.
+  let expiresAt: string | undefined;
+  const m = c.expiry ? /^(\w{3})\s+(\d{4})$/.exec(c.expiry) : null;
+  if (m && MONTH_INDEX[m[1]] !== undefined) {
+    expiresAt = new Date(
+      parseInt(m[2], 10),
+      MONTH_INDEX[m[1]],
+      15,
+    ).toISOString();
+  }
+  // Test & Tag is flagged in MC with `detail: "Due for renewal"` —
+  // Chekku surfaces that as Expiring Soon regardless of expiry-date math.
+  if (c.detail === "Due for renewal" && status === "Active") {
+    status = "Expiring Soon";
+  }
+  return {
+    id: c.type,
+    name: c.label,
+    status,
+    expiresAt,
+    layer: 1 as const,
+  };
+});
+
+// Layer 2 / 3 — Chekku-specific opportunity framing. These reflect work
+// types Brett could pursue but hasn't yet. Aaron's "compliance is
+// obviously profitable" principle in action: each gap names a dollar
+// figure for completing it.
+const SANDBAR_OPPORTUNITY: ComplianceDocument[] = [
+  {
+    id: "arc-refrigeration",
+    name: "ARC Refrigeration Trading Authorisation",
+    status: "Not Started",
+    unlocks:
+      "Unlocks 23 HVAC jobs in your area — ~$8,000/month based on current demand",
+    layer: 2,
+  },
+  {
+    id: "first-aid",
+    name: "First Aid Certificate (HLTAID011)",
+    status: "Not Started",
+    unlocks:
+      "Complete First Aid to unlock $12,400 of Harvey Norman work in your area",
+    layer: 2,
+  },
+  {
+    id: "insurance-coc",
+    name: "Insurance Code of Conduct (CIIC)",
+    status: "Not Started",
+    unlocks:
+      "Complete to unlock ~$18,000 of insurance repair work in your area",
+    layer: 3,
+  },
+];
+
 export function getComplianceDocs(): ComplianceDocument[] {
-  return [
-    {
-      id: "elec-licence",
-      name: "Electrical Contractor Licence",
-      status: "Active",
-      expiresAt: offsetDate(52).toISOString(),
-      layer: 1,
-    },
-    {
-      id: "working-heights",
-      name: "Working at Heights",
-      status: "Active",
-      expiresAt: offsetDate(270).toISOString(),
-      layer: 1,
-    },
-    {
-      id: "white-card",
-      name: "White Card (Construction Induction)",
-      status: "Active",
-      layer: 1,
-    },
-    {
-      id: "public-liability",
-      name: "Public Liability Insurance",
-      status: "Expiring Soon",
-      expiresAt: offsetDate(34).toISOString(),
-      layer: 1,
-    },
-    {
-      id: "first-aid",
-      name: "First Aid Certificate",
-      status: "Not Started",
-      unlocks: "Complete First Aid to unlock $12,400 of Harvey Norman work in your area",
-      layer: 2,
-    },
-    {
-      id: "qbe-induction",
-      name: "QBE Repair Network Induction",
-      status: "Not Started",
-      unlocks: "Complete to unlock ~$18,000 of insurance repair work in your area",
-      layer: 2,
-    },
-    {
-      id: "solar-pv-endorsement",
-      name: "Solar / Roof-top PV Endorsement",
-      status: "Not Started",
-      unlocks: "Required for premium-tier solar installs — adds ~$22,000/year for trades in your area",
-      layer: 3,
-    },
-  ];
+  return [...SANDBAR_LAYER_1, ...SANDBAR_OPPORTUNITY];
 }
 
 // ---------- Scope templates ----------

@@ -56,7 +56,7 @@ export default function DetailsPage() {
               autoComplete="name"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder="Jake Mitchell"
+              placeholder="Brett Sandford"
               className="mt-1 w-full rounded-2xl border border-border-strong bg-surface px-4 py-3.5 text-lg outline-none focus:border-accent"
             />
           </div>

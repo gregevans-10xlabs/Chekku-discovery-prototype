@@ -8,7 +8,7 @@ import {
   useMemo,
   useState,
 } from "react";
-import { getJobs, getOpportunities, getPastOpportunities, getTeam, JAKE } from "@/lib/demo-data";
+import { BRETT, getJobs, getOpportunities, getPastOpportunities, getTeam } from "@/lib/demo-data";
 import type {
   AttendanceConfirmation,
   BankAccount,
@@ -87,7 +87,7 @@ function defaultState(): PersistedState {
   return {
     onboarded: false,
     hasTeam: false,
-    trade: JAKE,
+    trade: BRETT,
     jobs: getJobs(),
     opportunities: getOpportunities(),
     pastOpportunities: getPastOpportunities(),
