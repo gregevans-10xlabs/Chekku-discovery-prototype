@@ -350,17 +350,17 @@ function FindJobsAskAI() {
       placeholder="Ask about these jobs…"
       suggestions={[
         {
-          label: "Why can't I take this?",
+          label: "What would unlock more work?",
           question:
-            "Are any opportunities here filtered out by my compliance? Which ones, and what would I need to take them?",
+            "Which compliance items, certifications, or skills would unlock more opportunities for me — and roughly how much extra work would each unlock?",
         },
         {
-          label: "Best fit for my skills",
+          label: "Best fit for me",
           question:
             "Which of these opportunities are the best fit for my trade types and compliance?",
         },
         {
-          label: "What pays best near me?",
+          label: "Best paying nearby",
           question:
             "Which of these opportunities have the best return on travel and time, given they're in my service area?",
         },

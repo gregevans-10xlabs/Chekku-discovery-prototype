@@ -525,7 +525,7 @@ function JobAskAI({
             "Which photos does the Installation Report require for this job type?",
         },
         {
-          label: "Compliance for this job",
+          label: "Am I covered for this?",
           question:
             "Which compliance items does this specific job require, and which do I have? Anything I need to upload before I attend?",
         },

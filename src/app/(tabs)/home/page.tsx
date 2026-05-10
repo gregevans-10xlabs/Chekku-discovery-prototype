@@ -238,15 +238,15 @@ function AIInput({ mode }: { mode: Mode }) {
     switch (mode) {
       case "morning":
         return [
-          { label: "What's near me", question: "What jobs are available near me right now?" },
-          { label: "Plan my day", question: "Walk me through today — what should I prep for each job?" },
-          { label: "Why can't I take this?", question: "Are any opportunities currently filtered out by my compliance? Which ones and why?" },
+          { label: "Walk me through today", question: "Walk me through today — what should I prep for each job?" },
+          { label: "Any work nearby?", question: "What jobs are available near me right now?" },
+          { label: "Anything I should sort first?", question: "Before I head out today, is there anything I'm missing — compliance about to lapse, jobs I haven't confirmed, equipment unresolved, anything outstanding?" },
         ];
       case "during":
         return [
-          { label: "Help with this job", question: "What do I need to know before I leave the current job?" },
-          { label: "Photo checklist", question: "What photos do I need to capture for this job type?" },
-          { label: "Reschedule the next one", question: "I'm running late — draft a message I can send to the next customer to let them know." },
+          { label: "Anything I should check?", question: "What do I need to know before I leave the current job?" },
+          { label: "What photos do I need?", question: "What photos do I need to capture for this job type?" },
+          { label: "I'm running late", question: "I'm running late — draft a message I can send to the next customer to let them know." },
         ];
       case "evening":
         return [
@@ -256,9 +256,9 @@ function AIInput({ mode }: { mode: Mode }) {
         ];
       case "tomorrow":
         return [
-          { label: "Show me tomorrow", question: "What's the plan for tomorrow?" },
-          { label: "Compliance for tomorrow", question: "Is my compliance covered for tomorrow's jobs?" },
-          { label: "What's near me tomorrow?", question: "Are there other opportunities tomorrow worth picking up?" },
+          { label: "Walk me through tomorrow", question: "What's the plan for tomorrow?" },
+          { label: "Am I sorted for tomorrow?", question: "Is my compliance covered for tomorrow's jobs and is the equipment ready?" },
+          { label: "Any extra work tomorrow?", question: "Are there other opportunities tomorrow worth picking up?" },
         ];
     }
   })();
