@@ -84,35 +84,23 @@ export default function HomePage() {
 
   return (
     <main className="flex flex-col gap-3 pb-6">
-      {/* Avatar-only header — no greeting (EH change 1) */}
-      <header className="flex items-center justify-end px-5 pt-4">
-        <Link
-          href="/profile"
-          aria-label="Profile"
-          className="flex h-11 w-11 items-center justify-center rounded-full border border-accent/30 bg-accent-soft text-[14px] font-bold text-accent-strong"
-          style={{ minHeight: 44 }}
-        >
-          BS
-        </Link>
-      </header>
-
-      {/* Big-number hero (EH change 1) */}
-      <BigNumberHero
+      {/* Combined header row — big number + avatar share a single
+          horizontal row so the top of the page isn't wasted on an
+          empty header band. Phase 7 change 7. */}
+      <CombinedHeader
         mode={mode}
         todayJobs={todayJobs}
         tomorrowJobs={tomorrowJobs}
         activeJob={activeJob}
       />
 
-      {/* AI surface — input always visible, chips reveal on focus
-          (EH change 5) */}
+      {/* AI surface — accent-tinted to be visually distinct from the
+          regular floating cards below. Phase 7 change 5. */}
       <section className="px-5">
         <AIInputCollapsible mode={mode} />
       </section>
 
-      {/* Card stack — no section headers (EH change 4); each card uses
-          the standard 3-element pattern with floating shadow (changes
-          2 + 3); CTAs are imperative (change 6) */}
+      {/* Card stack — pruned per Phase 7 changes 1, 4, 6 */}
       <CardStack
         mode={mode}
         todayJobs={todayJobs}
@@ -129,11 +117,14 @@ export default function HomePage() {
 }
 
 // ─────────────────────────────────────────────────────────────────────
-// Big-number hero — the page anchor. "Today" + dollar amount + tiny
-// subtitle, adapts per mode but visual treatment stays identical so
-// the user knows where they are at a glance.
+// CombinedHeader — Phase 7 change 7. Big-number hero and Profile
+// avatar share a single horizontal row at the top of the page so we
+// don't waste the top ~60pt on an empty header band. The dollar
+// amount is the dominant element; "Today" label + subtitle wrap
+// around it. Avatar sits right-aligned, vertically centered against
+// the dollar amount.
 
-function BigNumberHero({
+function CombinedHeader({
   mode,
   todayJobs,
   tomorrowJobs,
@@ -183,15 +174,27 @@ function BigNumberHero({
   }
 
   return (
-    <section className="px-5">
-      <p className="text-[13px] font-medium uppercase tracking-[0.08em] text-muted">
-        {label}
-      </p>
-      <p className="mt-1 text-[40px] font-bold leading-none tracking-tight text-foreground">
-        ${amount.toFixed(0)}
-      </p>
-      <p className="mt-1.5 text-[13px] text-muted">{subtitle}</p>
-    </section>
+    <header className="flex items-center justify-between gap-4 px-5 pt-5">
+      <div className="min-w-0 flex-1">
+        <div className="flex items-baseline gap-2.5">
+          <p className="text-[13px] font-medium uppercase tracking-[0.08em] text-muted">
+            {label}
+          </p>
+          <p className="text-[40px] font-bold leading-none tracking-tight text-foreground">
+            ${amount.toFixed(0)}
+          </p>
+        </div>
+        <p className="mt-1.5 text-[13px] text-muted">{subtitle}</p>
+      </div>
+      <Link
+        href="/profile"
+        aria-label="Profile"
+        className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-accent/30 bg-accent-soft text-[14px] font-bold text-accent-strong"
+        style={{ minHeight: 44 }}
+      >
+        BS
+      </Link>
+    </header>
   );
 }
 
@@ -284,6 +287,7 @@ function AIInputCollapsible({ mode }: { mode: Mode }) {
       placeholder="Ask Chekku anything…"
       suggestions={suggestions}
       collapsibleChips
+      distinctive
     />
   );
 }

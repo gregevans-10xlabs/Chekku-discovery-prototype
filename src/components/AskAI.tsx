@@ -135,6 +135,13 @@ export interface AskAIProps {
    * preserving instant typing.
    */
   collapsibleChips?: boolean;
+  /**
+   * Phase 7 change 5: when true, the AI card uses an accent-tinted
+   * background and shows a "Chekku AI" badge in the corner. Makes
+   * the AI surface visually distinct from regular floating cards.
+   * Used on Home where AI is the primary surface element.
+   */
+  distinctive?: boolean;
   /** Fire a one-shot question by setting trigger.text and bumping nonce. */
   trigger?: { text: string; nonce: number };
 }
@@ -145,6 +152,7 @@ export default function AskAI({
   placeholder,
   suggestions,
   collapsibleChips = false,
+  distinctive = false,
 }: AskAIProps) {
   const [q, setQ] = useState("");
   const [msgs, setMsgs] = useState<{ role: string; content: string }[]>([]);
@@ -223,10 +231,26 @@ ${context}`;
   const chipsVisible =
     !collapsibleChips || focused || msgs.length > 0 || q.length > 0;
 
+  // Distinctive variant — accent-tinted background + small "Chekku AI"
+  // badge top-left. Used on Home so AI reads as a different category
+  // of surface from the regular floating cards below it.
+  const wrapClass = distinctive
+    ? "rounded-2xl bg-accent-soft border border-accent/25 p-3 pt-2.5"
+    : "rounded-2xl bg-surface p-3 [box-shadow:var(--shadow-card)]";
+  const inputBgClass = distinctive ? "bg-surface" : "bg-background";
+
   return (
-    <div className="rounded-2xl bg-surface p-3 [box-shadow:var(--shadow-card)]">
-      <div className="flex items-center gap-2.5 rounded-xl bg-background py-1 pl-3.5 pr-1">
-        <SparkleIcon />
+    <div className={wrapClass}>
+      {distinctive ? (
+        <div className="mb-2 flex items-center gap-1.5 px-1">
+          <SparkleIcon />
+          <span className="text-[11px] font-semibold uppercase tracking-[0.08em] text-accent-strong">
+            Chekku AI
+          </span>
+        </div>
+      ) : null}
+      <div className={`flex items-center gap-2.5 rounded-xl ${inputBgClass} py-1 pl-3.5 pr-1`}>
+        {distinctive ? null : <SparkleIcon />}
         <input
           type="text"
           placeholder={placeholder ?? "Ask Chekku anything…"}

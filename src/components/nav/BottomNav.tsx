@@ -1,7 +1,27 @@
 "use client";
 
+/**
+ * BottomNav — Phase 7 update: tabs carry notification badges so the
+ * trade can see at a glance which tabs need attention without going
+ * to Home and reading. Decentralises the per-tab notifications that
+ * were previously cluttering Home's notification stack.
+ *
+ * Badge rules:
+ * - Home: never badged (Home pulls everything together; user is here)
+ * - Schedule: dot when tomorrow has unresolved equipment delivery
+ * - Find Jobs: dot when an urgent opportunity is available + unresponded
+ * - Money: count when one or more RCTIs are in Action Required
+ * - My Team (when on): dot when any delegated job has equipment unresolved
+ * - Profile: never badged (passive surface)
+ *
+ * Badge style — dot for "something here" (no count), pill with count
+ * for things you can quantify. Both use accent or warn tone depending
+ * on urgency.
+ */
+
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useMemo } from "react";
 import { useAppState } from "@/lib/state/AppStateProvider";
 
 interface Item {
@@ -20,10 +40,54 @@ const items: Item[] = [
 
 const myTeam: Item = { href: "/my-team", label: "My Team", icon: <IconTeam /> };
 
+interface BadgeState {
+  tone: "accent" | "warn";
+  count?: number;
+}
+
 export function BottomNav() {
   const pathname = usePathname();
   const { state } = useAppState();
   const list = state.hasTeam ? [...items, myTeam] : items;
+
+  const badges = useMemo<Record<string, BadgeState | undefined>>(() => {
+    const out: Record<string, BadgeState | undefined> = {};
+
+    // Schedule — tomorrow has equipment unresolved
+    const tomorrowJeopardy = state.jobs.some(
+      (j) =>
+        j.dateOffsetDays === 1 &&
+        (j.equipmentDeliveryStatus === "Not Yet Received" ||
+          j.equipmentDeliveryStatus === "Delayed"),
+    );
+    if (tomorrowJeopardy) out["/schedule"] = { tone: "warn" };
+
+    // Find Jobs — urgent opportunity available
+    const urgentOpp = state.opportunities.some(
+      (o) => o.urgent && !o.outcome,
+    );
+    if (urgentOpp) out["/find-jobs"] = { tone: "accent" };
+
+    // Money — RCTI Action Required count
+    const actionCount = state.jobs.filter(
+      (j) => j.paymentStatus === "Action Required",
+    ).length;
+    if (actionCount > 0)
+      out["/money"] = { tone: "warn", count: actionCount };
+
+    // My Team — delegated job with equipment unresolved (only when team on)
+    if (state.hasTeam) {
+      const teamJeopardy = state.jobs.some(
+        (j) =>
+          j.assignedToMemberId &&
+          (j.equipmentDeliveryStatus === "Not Yet Received" ||
+            j.equipmentDeliveryStatus === "Delayed"),
+      );
+      if (teamJeopardy) out["/my-team"] = { tone: "warn" };
+    }
+
+    return out;
+  }, [state.jobs, state.opportunities, state.hasTeam]);
 
   return (
     <nav className="sticky bottom-0 z-30 border-t border-border bg-background/95 backdrop-blur">
@@ -33,6 +97,7 @@ export function BottomNav() {
       >
         {list.map((it) => {
           const active = pathname === it.href || pathname.startsWith(it.href + "/");
+          const badge = badges[it.href];
           return (
             <Link
               key={it.href}
@@ -45,11 +110,12 @@ export function BottomNav() {
             >
               <span
                 className={
-                  "flex h-6 w-6 items-center justify-center " +
+                  "relative flex h-6 w-6 items-center justify-center " +
                   (active ? "text-accent" : "text-muted")
                 }
               >
                 {it.icon}
+                {badge ? <NavBadge badge={badge} /> : null}
               </span>
               <span className="leading-none">{it.label}</span>
             </Link>
@@ -57,6 +123,34 @@ export function BottomNav() {
         })}
       </div>
     </nav>
+  );
+}
+
+function NavBadge({ badge }: { badge: BadgeState }) {
+  const bgClass =
+    badge.tone === "warn" ? "bg-warn" : "bg-accent";
+  if (badge.count !== undefined) {
+    return (
+      <span
+        className={
+          "absolute -right-2 -top-1 inline-flex min-w-[18px] items-center justify-center rounded-full px-1 text-[10px] font-bold leading-none text-white " +
+          bgClass
+        }
+        style={{ height: 18 }}
+        aria-label={`${badge.count} item${badge.count === 1 ? "" : "s"} need attention`}
+      >
+        {badge.count}
+      </span>
+    );
+  }
+  return (
+    <span
+      className={
+        "absolute -right-1 -top-0.5 h-2.5 w-2.5 rounded-full ring-2 ring-background " +
+        bgClass
+      }
+      aria-label="Needs attention"
+    />
   );
 }
 
