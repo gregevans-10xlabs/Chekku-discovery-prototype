@@ -128,6 +128,13 @@ export interface AskAIProps {
   size?: "prominent" | "default" | "compact";
   placeholder?: string;
   suggestions?: AskAISuggestion[];
+  /**
+   * EH-discipline pattern (Phase 6): when true, suggestion chips are
+   * hidden at rest and only appear when the input is focused or the
+   * conversation is non-empty. Keeps the surface visually calm while
+   * preserving instant typing.
+   */
+  collapsibleChips?: boolean;
   /** Fire a one-shot question by setting trigger.text and bumping nonce. */
   trigger?: { text: string; nonce: number };
 }
@@ -137,10 +144,12 @@ export default function AskAI({
   size = "default",
   placeholder,
   suggestions,
+  collapsibleChips = false,
 }: AskAIProps) {
   const [q, setQ] = useState("");
   const [msgs, setMsgs] = useState<{ role: string; content: string }[]>([]);
   const [loading, setLoading] = useState(false);
+  const [focused, setFocused] = useState(false);
   const tail = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -208,15 +217,23 @@ ${context}`;
   const chipText = size === "prominent" ? "text-[13px]" : "text-[12px]";
   const chipPad = size === "prominent" ? "px-3.5 py-2" : "px-3 py-1.5";
 
+  // Chips visibility — when collapsibleChips is on, chips appear once
+  // the input has focus or once a conversation has started. Otherwise
+  // chips are always visible.
+  const chipsVisible =
+    !collapsibleChips || focused || msgs.length > 0 || q.length > 0;
+
   return (
-    <div className="rounded-2xl border border-border bg-surface p-3 [box-shadow:0_1px_2px_rgba(15,20,25,0.04)]">
-      <div className="flex items-center gap-2.5 rounded-xl border border-border bg-background py-1 pl-3.5 pr-1">
+    <div className="rounded-2xl bg-surface p-3 [box-shadow:var(--shadow-card)]">
+      <div className="flex items-center gap-2.5 rounded-xl bg-background py-1 pl-3.5 pr-1">
         <SparkleIcon />
         <input
           type="text"
           placeholder={placeholder ?? "Ask Chekku anything…"}
           value={q}
           onChange={(e) => setQ(e.target.value)}
+          onFocus={() => setFocused(true)}
+          onBlur={() => setFocused(false)}
           onKeyDown={(e) => e.key === "Enter" && ask()}
           className={`flex-1 bg-transparent ${inputPadY} ${inputText} outline-none`}
         />
@@ -231,13 +248,19 @@ ${context}`;
         </button>
       </div>
 
-      {suggestions && suggestions.length > 0 ? (
+      {suggestions && suggestions.length > 0 && chipsVisible ? (
         <div className="mt-2.5 flex flex-wrap gap-2">
           {suggestions.map((s, i) => (
             <button
               key={i}
               type="button"
-              onClick={() => ask(s.question)}
+              // Use onMouseDown so the click fires before the input's
+              // onBlur hides the chip — otherwise tapping a chip while
+              // the input is focused races against the blur.
+              onMouseDown={(e) => {
+                e.preventDefault();
+                void ask(s.question);
+              }}
               disabled={loading}
               title={s.question}
               className={`rounded-full border border-accent/30 bg-accent-soft ${chipPad} ${chipText} font-semibold text-accent-strong transition-colors hover:bg-accent/15 disabled:opacity-40`}
