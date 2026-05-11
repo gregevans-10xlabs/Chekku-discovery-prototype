@@ -17,9 +17,14 @@
  */
 
 :root {
-  /* ---------- Light (default) ---------- */
-  --background: #ffffff;
-  --surface: #fafafa;
+  /* ---------- Light (default) ----------
+   * Phase 6 EH-discipline pass: page background is a slight cool wash
+   * (#f7f8fa) so true-white cards (#ffffff) float on it via shadow,
+   * not via border. Cards drop their borders entirely; visual
+   * separation comes from --shadow-card.
+   */
+  --background: #f7f8fa;
+  --surface: #ffffff;
   --surface-2: #f3f4f6;
   --surface-3: #e5e7eb;
   --border: #e5e7eb;
@@ -43,12 +48,20 @@
 
   /* Tinted shadow for primary CTAs (subtle green wash) */
   --shadow-accent: 0 4px 12px rgba(0, 166, 81, 0.18);
+
+  /* Floating-card shadow — EH pattern. Two-layer subtle shadow gives
+   * cards depth without weight. */
+  --shadow-card:
+    0 1px 3px rgba(15, 20, 25, 0.04),
+    0 4px 12px rgba(15, 20, 25, 0.06);
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
+    /* Page bg slightly darker than card surface so the same EH
+     * floating effect works in dark mode. */
     --background: #0b0f1a;
-    --surface: #111827;
+    --surface: #161e2e;
     --surface-2: #1f2937;
     --surface-3: #374151;
     --border: #1f2937;
@@ -71,6 +84,11 @@
     --info: #60a5fa;
 
     --shadow-accent: 0 4px 14px rgba(0, 196, 106, 0.22);
+
+    /* Stronger shadow in dark — needs more contrast against dark bg */
+    --shadow-card:
+      0 1px 3px rgba(0, 0, 0, 0.3),
+      0 4px 12px rgba(0, 0, 0, 0.2);
   }
 }
 
