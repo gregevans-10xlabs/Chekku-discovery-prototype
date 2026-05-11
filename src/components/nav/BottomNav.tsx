@@ -53,8 +53,18 @@ export function BottomNav() {
   const badges = useMemo<Record<string, BadgeState | undefined>>(() => {
     const out: Record<string, BadgeState | undefined> = {};
 
-    // Schedule — tomorrow has equipment unresolved
-    const tomorrowJeopardy = state.jobs.some(
+    // Each badge must reflect what's visible on the DESTINATION tab —
+    // otherwise a tap on a badged tab leaves the user hunting for
+    // something that isn't there. When team is on, Schedule and Money
+    // hide team-delegated jobs (they live on My Team); the badges
+    // here apply the same filter so the destination always shows the
+    // thing that triggered the badge.
+    const ownJobs = state.hasTeam
+      ? state.jobs.filter((j) => !j.assignedToMemberId)
+      : state.jobs;
+
+    // Schedule — tomorrow has equipment unresolved (Brett's own jobs only)
+    const tomorrowJeopardy = ownJobs.some(
       (j) =>
         j.dateOffsetDays === 1 &&
         (j.equipmentDeliveryStatus === "Not Yet Received" ||
@@ -62,20 +72,23 @@ export function BottomNav() {
     );
     if (tomorrowJeopardy) out["/schedule"] = { tone: "warn" };
 
-    // Find Jobs — urgent opportunity available
+    // Find Jobs — urgent opportunity available (no team-filtering;
+    // opportunities aren't team-assigned)
     const urgentOpp = state.opportunities.some(
       (o) => o.urgent && !o.outcome,
     );
     if (urgentOpp) out["/find-jobs"] = { tone: "accent" };
 
-    // Money — RCTI Action Required count
-    const actionCount = state.jobs.filter(
+    // Money — RCTI Action Required count (Brett's own jobs only;
+    // team-delegated RCTIs are visible on My Team's member detail)
+    const actionCount = ownJobs.filter(
       (j) => j.paymentStatus === "Action Required",
     ).length;
     if (actionCount > 0)
       out["/money"] = { tone: "warn", count: actionCount };
 
-    // My Team — delegated job with equipment unresolved (only when team on)
+    // My Team — delegated job with equipment unresolved (only when
+    // team on; mirrors the team-jeopardy callout on My Team)
     if (state.hasTeam) {
       const teamJeopardy = state.jobs.some(
         (j) =>
