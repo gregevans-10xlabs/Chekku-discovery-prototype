@@ -345,12 +345,15 @@ function CardStack({
         />
       ) : null}
 
-      {/* Always-on cards: notifications, pending responses, opportunity
-          surfacing, compliance summary */}
-      <NotificationsList />
-      <PendingResponsesCard />
-      <OpportunityCards />
-      <ComplianceCard />
+      {/* Home-specific notifications only — cross-tab notifications
+          (urgent opportunity, RCTI Action Required, jeopardy on
+          delegated jobs) now surface as nav badges on the relevant
+          tabs. Phase 7 changes 1, 4, 8. */}
+      <HomeNotificationPill />
+
+      {/* Single opportunity surface — mutually exclusive between
+          "nearby work" and "cert unlock". Phase 7 change 6. */}
+      <OpportunityCardSingle />
     </section>
   );
 }
@@ -640,8 +643,9 @@ function NextJobCard({
             {job.customer.firstName} · {job.customer.suburb}
           </p>
         </div>
-        <span className="shrink-0 text-[13px] font-semibold text-accent-strong">
-          Open →
+        {/* Phase 7 change 3: primary CTA is a filled pill, not a text arrow */}
+        <span className="shrink-0 rounded-lg bg-accent px-3.5 py-2 text-[13px] font-semibold text-white">
+          Open job
         </span>
       </div>
       {swmsGap ? (
@@ -745,12 +749,17 @@ function AttendanceCard({
 }
 
 // ─────────────────────────────────────────────────────────────────────
-// Always-on: notifications (exception-only), pending-responses count,
-// opportunity surfacing, compliance summary
+// HomeNotificationPill — Phase 7 changes 1, 4. Cross-tab notifications
+// (urgent opportunity, RCTI Action Required, jeopardy on delegated
+// jobs) now surface as nav badges; this pill carries only HOME-specific
+// items (recent wins, things the trade can resolve from Home itself).
+// At rest with one item: full pill with inline action. With multiple
+// items: collapsed pill showing count, expandable.
 
-function NotificationsList() {
+function HomeNotificationPill() {
   const { state } = useAppState();
   const [nowMs, setNowMs] = useState(() => Date.now());
+  const [expanded, setExpanded] = useState(false);
   useEffect(() => {
     const id = setInterval(() => setNowMs(Date.now()), 30_000);
     return () => clearInterval(id);
@@ -759,15 +768,14 @@ function NotificationsList() {
   const items = useMemo(() => {
     const out: Array<{
       id: string;
-      tone: "warn" | "accent";
       icon: string;
-      label: string;
       title: string;
-      body: string;
       href: string;
       cta: string;
     }> = [];
 
+    // Recent wins surface here as a celebration touch (kept on Home
+    // because the trade just acted to win this; immediate feedback).
     const RECENT_WIN_MS = 5 * 60_000;
     state.jobs
       .filter(
@@ -776,177 +784,92 @@ function NotificationsList() {
       .forEach((job) => {
         out.push({
           id: `won-${job.id}`,
-          tone: "accent",
           icon: "🎉",
-          label: "Job awarded",
-          title: `${job.type} · ${job.customer.suburb}`,
-          body: `Circl picked you. ${job.cgNumber} is now in your Schedule for ${
-            job.dateOffsetDays === 0
-              ? "today"
-              : job.dateOffsetDays === 1
-                ? "tomorrow"
-                : `${job.dateOffsetDays} days from now`
-          } at ${job.startTime}.`,
+          title: `${job.type} won — ${job.cgNumber}`,
           href: `/jobs/${job.id}`,
-          cta: "Open",
+          cta: "Open job",
         });
       });
 
-    const jeopardyJob = state.jobs.find(
-      (j) =>
-        j.dateOffsetDays === 1 &&
-        (j.equipmentDeliveryStatus === "Not Yet Received" ||
-          j.equipmentDeliveryStatus === "Delayed"),
-    );
-    if (jeopardyJob) {
-      const trackingDetail = jeopardyJob.tracking
-        ? ` ${jeopardyJob.tracking.carrier} ${jeopardyJob.tracking.number} is still in transit.`
-        : "";
-      const member = jeopardyJob.assignedToMemberId
-        ? state.team.members.find(
-            (m) => m.id === jeopardyJob.assignedToMemberId,
-          )
-        : null;
-      const title = member
-        ? `${member.name.split(" ")[0]}'s tomorrow ${jeopardyJob.customer.suburb} job`
-        : `Tomorrow's ${jeopardyJob.customer.suburb} job`;
-      out.push({
-        id: `jeopardy-${jeopardyJob.id}`,
-        tone: "warn",
-        icon: "⚠️",
-        label: member
-          ? "Team — equipment not delivered"
-          : "Equipment not delivered",
-        title,
-        body: `${jeopardyJob.type} at ${jeopardyJob.startTime}.${trackingDetail} Tap to track or contact Circl Support.`,
-        href: `/jobs/${jeopardyJob.id}`,
-        cta: "Open",
-      });
-    }
-
-    const urgentOpp = state.opportunities.find((o) => o.urgent && !o.outcome);
-    if (urgentOpp) {
-      out.push({
-        id: `urgent-${urgentOpp.id}`,
-        tone: "accent",
-        icon: "⚡",
-        label: "Urgent job available",
-        title: `${urgentOpp.type} · ${urgentOpp.suburb.replace(" NSW", "")}`,
-        body: `${urgentOpp.distanceKm.toFixed(1)} km away · ${urgentOpp.timeOfDay} today · $${urgentOpp.value.toFixed(0)}.`,
-        href: `/find-jobs/${urgentOpp.id}`,
-        cta: "View",
-      });
-    }
-
-    const actionJob = state.jobs.find(
-      (j) => j.paymentStatus === "Action Required",
-    );
-    if (actionJob) {
-      const noBank = !state.trade.bankAccount;
-      out.push({
-        id: `action-${actionJob.id}`,
-        tone: "warn",
-        icon: "💸",
-        label: "Payment needs your attention",
-        title: actionJob.rctiNumber
-          ? `RCTI ${actionJob.rctiNumber}`
-          : actionJob.cgNumber,
-        body: noBank
-          ? "Add your bank account so this RCTI can be settled."
-          : "Your RCTI needs your attention before payment can be released.",
-        href: noBank ? "/money/bank" : `/money/rcti/${actionJob.id}`,
-        cta: noBank ? "Add bank" : "Open",
-      });
-    }
-
     return out;
-  }, [
-    state.jobs,
-    state.opportunities,
-    state.trade.bankAccount,
-    state.team.members,
-    nowMs,
-  ]);
+  }, [state.jobs, nowMs]);
 
   if (items.length === 0) return null;
 
+  // Single item: full pill with inline button
+  if (items.length === 1) {
+    const n = items[0];
+    return (
+      <Link
+        href={n.href}
+        className="flex items-center gap-3 rounded-2xl border border-accent/30 bg-accent-soft px-4 py-3"
+        style={{ minHeight: 44 }}
+      >
+        <span className="text-[18px]" aria-hidden>
+          {n.icon}
+        </span>
+        <span className="min-w-0 flex-1 truncate text-[14px] font-semibold">
+          {n.title}
+        </span>
+        <span className="shrink-0 rounded-lg bg-accent px-3 py-1.5 text-[12px] font-semibold text-white">
+          {n.cta}
+        </span>
+      </Link>
+    );
+  }
+
+  // Multiple items: collapsed pill, expand on tap
   return (
-    <>
-      {items.map((n) => {
-        const wrapClass =
-          n.tone === "warn"
-            ? "border-warn/40 bg-warn-soft"
-            : "border-accent/30 bg-accent-soft";
-        const labelClass =
-          n.tone === "warn" ? "text-warn" : "text-accent-strong";
-        return (
-          <Link
-            key={n.id}
-            href={n.href}
-            className={`block rounded-2xl border p-4 ${wrapClass}`}
-            style={{ minHeight: 44 }}
-          >
-            <div className="flex items-start gap-3">
-              <span aria-hidden className="text-[20px] leading-tight">
+    <div className="overflow-hidden rounded-2xl border border-accent/30 bg-accent-soft">
+      <button
+        type="button"
+        onClick={() => setExpanded((v) => !v)}
+        className="flex w-full items-center gap-3 px-4 py-3 text-left"
+        style={{ minHeight: 44 }}
+      >
+        <span className="text-[18px]" aria-hidden>
+          ✨
+        </span>
+        <span className="min-w-0 flex-1 text-[14px] font-semibold">
+          {items.length} things on Home
+        </span>
+        <span className="shrink-0 text-[16px] text-accent-strong" aria-hidden>
+          {expanded ? "▴" : "▾"}
+        </span>
+      </button>
+      {expanded ? (
+        <div className="space-y-1 border-t border-accent/30 bg-surface/40 p-2">
+          {items.map((n) => (
+            <Link
+              key={n.id}
+              href={n.href}
+              className="flex items-center gap-3 rounded-xl px-3 py-2.5 hover:bg-surface"
+              style={{ minHeight: 44 }}
+            >
+              <span className="text-[16px]" aria-hidden>
                 {n.icon}
               </span>
-              <div className="min-w-0 flex-1">
-                <p
-                  className={`text-[11px] font-semibold uppercase tracking-[0.08em] ${labelClass}`}
-                >
-                  {n.label}
-                </p>
-                <p className="mt-1 text-[14px] font-semibold">{n.title}</p>
-                <p className="mt-1 text-[12px] leading-5 text-foreground/85">
-                  {n.body}
-                </p>
-                <p className={`mt-2 text-[12px] font-semibold ${labelClass}`}>
-                  {n.cta} →
-                </p>
-              </div>
-            </div>
-          </Link>
-        );
-      })}
-    </>
+              <span className="min-w-0 flex-1 truncate text-[13px] font-semibold">
+                {n.title}
+              </span>
+              <span className="shrink-0 text-[12px] font-semibold text-accent-strong">
+                {n.cta} →
+              </span>
+            </Link>
+          ))}
+        </div>
+      ) : null}
+    </div>
   );
 }
 
-function PendingResponsesCard() {
-  const { state } = useAppState();
-  const pendingCount = useMemo(
-    () => state.opportunities.filter((o) => o.outcome === "awaiting").length,
-    [state.opportunities],
-  );
-  if (pendingCount === 0) return null;
-  return (
-    <Link
-      href="/find-jobs?tab=history"
-      className="block rounded-2xl bg-surface p-4 [box-shadow:var(--shadow-card)]"
-      style={{ minHeight: 44 }}
-    >
-      <div className="flex items-center gap-4">
-        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-accent-soft text-accent-strong text-[18px]">
-          ⏳
-        </div>
-        <div className="min-w-0 flex-1">
-          <p className="text-[15px] font-semibold leading-tight">
-            {pendingCount} {pendingCount === 1 ? "response" : "responses"}{" "}
-            awaiting Circl
-          </p>
-          <p className="mt-0.5 text-[13px] text-muted">
-            Decision usually within 15 seconds
-          </p>
-        </div>
-        <span className="shrink-0 text-[13px] font-semibold text-accent-strong">
-          Check →
-        </span>
-      </div>
-    </Link>
-  );
-}
+// ─────────────────────────────────────────────────────────────────────
+// OpportunityCardSingle — Phase 7 change 6. Show ONE opportunity surface
+// at a time, mutually exclusive: nearby work if available, otherwise
+// the cert-unlock card. Quiet days surface the unlock; busy days
+// surface the volume opportunity.
 
-function OpportunityCards() {
+function OpportunityCardSingle() {
   const { state } = useAppState();
   const docs = getComplianceDocs();
   const router = useRouter();
@@ -961,102 +884,66 @@ function OpportunityCards() {
     (d) => (d.layer === 2 || d.layer === 3) && d.unlocks,
   );
 
-  return (
-    <>
-      {nearbyAvailable.length > 0 ? (
-        <button
-          type="button"
-          onClick={() => router.push("/find-jobs")}
-          className="block w-full rounded-2xl bg-surface p-4 text-left [box-shadow:var(--shadow-card)]"
-          style={{ minHeight: 44 }}
-        >
-          <div className="flex items-center gap-4">
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-accent-soft text-accent-strong text-[18px]">
-              ★
-            </div>
-            <div className="min-w-0 flex-1">
-              <p className="text-[15px] font-semibold leading-tight">
-                +${totalNearby.toFixed(0)} nearby
-              </p>
-              <p className="mt-0.5 text-[13px] text-muted">
-                {nearbyAvailable.length}{" "}
-                {nearbyAvailable.length === 1 ? "job" : "jobs"} you could
-                take this week
-              </p>
-            </div>
-            <span className="shrink-0 text-[13px] font-semibold text-accent-strong">
-              Browse →
-            </span>
+  // Show nearby if there's worthwhile volume; otherwise show unlock
+  if (nearbyAvailable.length >= 3) {
+    return (
+      <button
+        type="button"
+        onClick={() => router.push("/find-jobs")}
+        className="block w-full rounded-2xl bg-surface p-4 text-left [box-shadow:var(--shadow-card)]"
+        style={{ minHeight: 44 }}
+      >
+        <div className="flex items-center gap-4">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-accent-soft text-accent-strong text-[18px]">
+            ★
           </div>
-        </button>
-      ) : null}
-
-      {unlock ? (
-        <Link
-          href="/profile/compliance"
-          className="block rounded-2xl border border-accent/30 bg-accent-soft p-4"
-          style={{ minHeight: 44 }}
-        >
-          <div className="flex items-center gap-4">
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-accent text-[16px] text-white">
-              ★
-            </div>
-            <div className="min-w-0 flex-1">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-accent-strong">
-                Unlock more work
-              </p>
-              <p className="mt-1 text-[15px] font-semibold leading-tight">
-                {unlock.name}
-              </p>
-              <p className="mt-0.5 text-[13px] text-foreground/85">
-                {unlock.unlocks}
-              </p>
-            </div>
-            <span className="shrink-0 text-[13px] font-semibold text-accent-strong">
-              See how →
-            </span>
+          <div className="min-w-0 flex-1">
+            <p className="text-[15px] font-semibold leading-tight">
+              +${totalNearby.toFixed(0)} nearby
+            </p>
+            <p className="mt-0.5 text-[13px] text-muted">
+              {nearbyAvailable.length}{" "}
+              {nearbyAvailable.length === 1 ? "job" : "jobs"} you could take
+              this week
+            </p>
           </div>
-        </Link>
-      ) : null}
-    </>
-  );
-}
+          <span className="shrink-0 rounded-lg bg-accent px-3.5 py-2 text-[13px] font-semibold text-white">
+            Browse
+          </span>
+        </div>
+      </button>
+    );
+  }
 
-function ComplianceCard() {
-  const docs = getComplianceDocs();
-  const counts = {
-    active: docs.filter((d) => d.status === "Active").length,
-    expiring: docs.filter((d) => d.status === "Expiring Soon").length,
-    expired: docs.filter((d) => d.status === "Expired").length,
-    missing: docs.filter((d) => d.status === "Not Started").length,
-  };
-  const needsAttention = counts.expiring + counts.expired;
-  const summary =
-    needsAttention > 0
-      ? `${needsAttention} ${needsAttention === 1 ? "item" : "items"} need attention`
-      : `${counts.active} ${counts.active === 1 ? "item" : "items"} active`;
-  return (
-    <Link
-      href="/profile/compliance"
-      className="block rounded-2xl bg-surface p-4 [box-shadow:var(--shadow-card)]"
-      style={{ minHeight: 44 }}
-    >
-      <div className="flex items-center gap-4">
-        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-accent-soft text-accent-strong text-[18px]">
-          ✓
+  if (unlock) {
+    return (
+      <Link
+        href="/profile/compliance"
+        className="block rounded-2xl border border-accent/30 bg-accent-soft p-4"
+        style={{ minHeight: 44 }}
+      >
+        <div className="flex items-center gap-4">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-accent text-[16px] text-white">
+            ★
+          </div>
+          <div className="min-w-0 flex-1">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-accent-strong">
+              Unlock more work
+            </p>
+            <p className="mt-1 text-[15px] font-semibold leading-tight">
+              {unlock.name}
+            </p>
+            <p className="mt-0.5 text-[13px] text-foreground/85">
+              {unlock.unlocks}
+            </p>
+          </div>
+          <span className="shrink-0 rounded-lg bg-accent px-3.5 py-2 text-[13px] font-semibold text-white">
+            See how
+          </span>
         </div>
-        <div className="min-w-0 flex-1">
-          <p className="text-[15px] font-semibold leading-tight">Compliance</p>
-          <p className="mt-0.5 text-[13px] text-muted">{summary}</p>
-        </div>
-        <span
-          className={`shrink-0 text-[13px] font-semibold ${
-            needsAttention > 0 ? "text-warn" : "text-accent-strong"
-          }`}
-        >
-          Check →
-        </span>
-      </div>
-    </Link>
-  );
+      </Link>
+    );
+  }
+
+  return null;
 }
