@@ -637,7 +637,7 @@ function MyDayCard({
         </p>
       </div>
 
-      <div className="mt-3 space-y-1">
+      <div className="mt-3 divide-y divide-border overflow-hidden rounded-xl border border-border">
         {jobs.map((j) => (
           <MyDayRow
             key={j.id}
@@ -694,8 +694,8 @@ function MyDayRow({
     <button
       type="button"
       onClick={onOpen}
-      className="flex w-full items-center gap-3 rounded-xl px-2 py-2 text-left hover:bg-surface-2"
-      style={{ minHeight: 44 }}
+      className="flex w-full items-center gap-3 bg-surface px-3 py-3 text-left transition-colors hover:bg-surface-2 active:bg-surface-2"
+      style={{ minHeight: 52 }}
     >
       <span
         className={`shrink-0 text-[15px] font-bold leading-none ${statusColor}`}
@@ -706,11 +706,15 @@ function MyDayRow({
       <span className="shrink-0 text-[13px] font-semibold tabular-nums text-foreground">
         {job.startTime.toLowerCase()}
       </span>
-      <span className="min-w-0 flex-1 truncate text-[13px] text-muted">
+      <span className="min-w-0 flex-1 truncate text-[13px] text-foreground/85">
         {job.type.replace(" Installation", "")} · {job.customer.firstName}{" "}
         · {job.customer.suburb}
       </span>
-      <span className="shrink-0 text-[12px] text-muted-strong" aria-hidden>
+      {/* Visible chevron pill — clearly signals "tap to open" */}
+      <span
+        className="shrink-0 flex h-6 w-6 items-center justify-center rounded-full bg-accent-soft text-[14px] font-bold text-accent-strong"
+        aria-hidden
+      >
         ›
       </span>
     </button>

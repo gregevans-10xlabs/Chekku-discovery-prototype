@@ -86,7 +86,13 @@ type Action =
 function defaultState(): PersistedState {
   return {
     onboarded: false,
-    hasTeam: false,
+    // Brett's persona is an established trade with a subcontractor team
+    // (Tom Baker, Sarah Chen, Marcus Webb). hasTeam=true is the right
+    // default so the My Team tab is visible, CG48955 (Tom-delegated /
+    // InProgress) is filtered from Brett's own Home view, and the team
+    // narrative shows up out of the box. Trades without a team can
+    // disable from Profile.
+    hasTeam: true,
     trade: BRETT,
     jobs: getJobs(),
     opportunities: getOpportunities(),
@@ -421,7 +427,11 @@ function reducer(state: PersistedState, action: Action): PersistedState {
   }
 }
 
-const KEY = "chekku:state:v4";
+// v5 (11 May 2026) — bumped to invalidate stale localStorage from
+// before the Phase 1.5B Sandbar data rewrite. Old persisted state
+// would carry the pre-Sandbar jobs / compliance, masking the SWMS-on-
+// CG36110 demo hook and the tomorrow-equipment-delayed callout.
+const KEY = "chekku:state:v5";
 
 interface AppStateCtx {
   state: PersistedState;
