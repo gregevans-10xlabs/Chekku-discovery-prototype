@@ -45,7 +45,7 @@ export default function LibraryItemPage({
 
       {/* Mock document preview */}
       <section className="px-5 pt-4">
-        <div className="rounded-2xl border border-border bg-surface p-6 text-center">
+        <div className="rounded-2xl bg-surface [box-shadow:var(--shadow-card)] p-6 text-center">
           <div className="mx-auto flex h-20 w-16 items-center justify-center rounded-md bg-surface-2 text-2xl">
             📄
           </div>
@@ -68,7 +68,7 @@ export default function LibraryItemPage({
         <h2 className="mb-2 text-xs font-semibold uppercase tracking-wider text-muted">
           What&apos;s included
         </h2>
-        <div className="rounded-2xl border border-border bg-surface p-4">
+        <div className="rounded-2xl bg-surface [box-shadow:var(--shadow-card)] p-4">
           <ul className="space-y-1.5 text-[13px]">
             {item.includes.map((line, i) => (
               <li key={i} className="flex gap-2">

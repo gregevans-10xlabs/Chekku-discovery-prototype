@@ -147,7 +147,7 @@ export default function ReschedulePage({
       <section className="flex-1 pb-4">
         {/* Current slot */}
         <div className="px-5 pt-4">
-          <div className="rounded-2xl border border-border bg-surface p-4">
+          <div className="rounded-2xl bg-surface [box-shadow:var(--shadow-card)] p-4">
             <p className="text-[11px] font-semibold uppercase tracking-wider text-muted">
               Current date
             </p>
@@ -163,7 +163,7 @@ export default function ReschedulePage({
 
         {/* Calendar */}
         <div className="px-5 pt-4">
-          <div className="rounded-2xl border border-border bg-surface p-3">
+          <div className="rounded-2xl bg-surface [box-shadow:var(--shadow-card)] p-3">
             <div className="mb-2 flex items-center justify-between">
               <button
                 type="button"

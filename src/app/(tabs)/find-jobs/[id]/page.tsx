@@ -80,7 +80,7 @@ export default function OpportunityDetail({
           ${opp.value.toFixed(2)}
         </p>
 
-        <div className="mt-5 rounded-2xl border border-border bg-surface p-4">
+        <div className="mt-5 rounded-2xl bg-surface [box-shadow:var(--shadow-card)] p-4">
           <h3 className="text-xs font-semibold uppercase tracking-wider text-muted">
             Scope of work
           </h3>
@@ -98,7 +98,7 @@ export default function OpportunityDetail({
           <MetaBox label="Contact">Available once accepted</MetaBox>
         </div>
 
-        <div className="mt-4 rounded-2xl border border-border bg-surface p-4">
+        <div className="mt-4 rounded-2xl bg-surface [box-shadow:var(--shadow-card)] p-4">
           <h3 className="text-xs font-semibold uppercase tracking-wider text-muted">
             Compliance required
           </h3>
@@ -229,7 +229,7 @@ function MetaBox({
   children: React.ReactNode;
 }) {
   return (
-    <div className="rounded-2xl border border-border bg-surface p-3">
+    <div className="rounded-2xl bg-surface [box-shadow:var(--shadow-card)] p-3">
       <p className="text-[11px] uppercase tracking-wider text-muted">{label}</p>
       <p className="mt-1 text-sm">{children}</p>
     </div>

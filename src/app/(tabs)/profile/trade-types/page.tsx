@@ -43,7 +43,7 @@ export default function TradeTypesPage() {
       />
 
       <section className="flex-1 px-5 pt-4 pb-4">
-        <div className="rounded-2xl border border-border bg-surface p-4">
+        <div className="rounded-2xl bg-surface [box-shadow:var(--shadow-card)] p-4">
           <p className="text-xs text-muted">
             Affects which jobs appear in Find Jobs and which compliance
             requirements are mandatory in your vault.

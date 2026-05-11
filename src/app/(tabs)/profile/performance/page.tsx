@@ -56,7 +56,7 @@ export default function PerformancePage() {
         <h2 className="mb-3 text-sm font-semibold text-muted">
           Tier criteria
         </h2>
-        <div className="rounded-2xl border border-border bg-surface p-4 text-[13px] leading-6">
+        <div className="rounded-2xl bg-surface [box-shadow:var(--shadow-card)] p-4 text-[13px] leading-6">
           <div className="flex items-center justify-between">
             <span className="font-semibold">Gold</span>
             <Badge tone="neutral">95%+ on-time · &lt;5% reschedule</Badge>
@@ -89,7 +89,7 @@ function PerformanceRow({
   improvement: string;
 }) {
   return (
-    <div className="rounded-2xl border border-border bg-surface p-4">
+    <div className="rounded-2xl bg-surface [box-shadow:var(--shadow-card)] p-4">
       <div className="flex items-baseline justify-between gap-3">
         <p className="text-[13px] text-muted">{label}</p>
         <p className="text-[15px] font-semibold">{value}</p>

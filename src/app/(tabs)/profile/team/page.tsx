@@ -20,7 +20,7 @@ export default function TeamSettingsPage() {
       />
 
       <section className="px-5 pt-4">
-        <div className="rounded-2xl border border-border bg-surface p-4">
+        <div className="rounded-2xl bg-surface [box-shadow:var(--shadow-card)] p-4">
           {state.hasTeam ? (
             <>
               <p className="text-[14px] font-semibold">My Team is on</p>

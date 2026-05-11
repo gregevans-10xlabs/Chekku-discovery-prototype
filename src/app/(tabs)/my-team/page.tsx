@@ -68,7 +68,7 @@ export default function MyTeamPage() {
       <main>
         <PageHeader title="My Team" />
         <div className="px-5 pt-6">
-          <div className="rounded-2xl border border-border bg-surface p-5 text-sm">
+          <div className="rounded-2xl bg-surface [box-shadow:var(--shadow-card)] p-5 text-sm">
             <p className="text-muted">
               My Team is a conditional tab — it only appears for primary
               contractors who have subcontractors or employees configured.
@@ -89,7 +89,7 @@ export default function MyTeamPage() {
 
       {/* Team-wide aggregate */}
       <section className="px-5 pt-4">
-        <div className="rounded-2xl border border-border bg-surface p-4">
+        <div className="rounded-2xl bg-surface [box-shadow:var(--shadow-card)] p-4">
           <p className="text-[11px] font-semibold uppercase tracking-wider text-muted">
             Team activity
           </p>
@@ -136,7 +136,7 @@ export default function MyTeamPage() {
             <Link
               key={m.id}
               href={`/my-team/${m.id}`}
-              className="block rounded-2xl border border-border bg-surface p-4"
+              className="block rounded-2xl bg-surface [box-shadow:var(--shadow-card)] p-4"
             >
               <div className="flex items-center gap-3">
                 <div className="flex h-10 w-10 items-center justify-center rounded-full bg-accent-soft font-bold text-accent">

@@ -44,7 +44,7 @@ export default function AccountPage() {
         <h2 className="mb-2 text-xs font-semibold uppercase tracking-wider text-muted">
           Personal &amp; business
         </h2>
-        <div className="rounded-2xl border border-border bg-surface p-4">
+        <div className="rounded-2xl bg-surface [box-shadow:var(--shadow-card)] p-4">
           <div className="space-y-2 text-[13px]">
             <FieldRow label="Full name" value={state.trade.fullName} />
             <FieldRow label="Phone" value={state.trade.phone} />
@@ -61,7 +61,7 @@ export default function AccountPage() {
         <h2 className="mb-2 text-xs font-semibold uppercase tracking-wider text-muted">
           Work preferences
         </h2>
-        <div className="overflow-hidden rounded-2xl border border-border bg-surface">
+        <div className="overflow-hidden rounded-2xl bg-surface [box-shadow:var(--shadow-card)]">
           <EditRow
             href="/profile/service-area"
             label="Service area"
@@ -88,7 +88,7 @@ export default function AccountPage() {
 
       {/* Sign out */}
       <section className="mt-6 px-5">
-        <div className="rounded-2xl border border-border bg-surface p-4 text-xs text-muted">
+        <div className="rounded-2xl bg-surface [box-shadow:var(--shadow-card)] p-4 text-xs text-muted">
           <p>
             Sign out clears your local data on this device — useful for
             starting a fresh demo run.

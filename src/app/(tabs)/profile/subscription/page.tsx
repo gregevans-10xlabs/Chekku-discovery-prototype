@@ -24,7 +24,7 @@ export default function SubscriptionPage() {
 
       {/* Current tier */}
       <section className="px-5 pt-4">
-        <div className="rounded-2xl border border-border bg-surface p-5">
+        <div className="rounded-2xl bg-surface [box-shadow:var(--shadow-card)] p-5">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-[11px] font-semibold uppercase tracking-wider text-muted">
@@ -78,7 +78,7 @@ export default function SubscriptionPage() {
         </h2>
         <Link
           href="/money"
-          className="flex items-center justify-between rounded-2xl border border-border bg-surface p-4"
+          className="flex items-center justify-between rounded-2xl bg-surface [box-shadow:var(--shadow-card)] p-4"
         >
           <div>
             <p className="text-[14px] font-semibold">Payment method &amp; bank</p>

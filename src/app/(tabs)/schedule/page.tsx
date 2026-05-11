@@ -140,7 +140,7 @@ function JobListRow({ job }: { job: Job }) {
       job.equipmentDeliveryStatus === "Delayed" ||
       job.equipmentDeliveryStatus === "Expected Today");
   return (
-    <div className="overflow-hidden rounded-2xl border border-border bg-surface">
+    <div className="overflow-hidden rounded-2xl bg-surface [box-shadow:var(--shadow-card)]">
       <Link href={`/jobs/${job.id}`} className="block p-4">
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
@@ -244,7 +244,7 @@ function CalendarView({ jobs }: { jobs: Job[] }) {
 
   return (
     <div className="px-5 pt-4">
-      <div className="rounded-2xl border border-border bg-surface p-3">
+      <div className="rounded-2xl bg-surface [box-shadow:var(--shadow-card)] p-3">
         <div className="mb-2 flex items-center justify-between">
           <button
             type="button"
@@ -369,7 +369,7 @@ function CalendarView({ jobs }: { jobs: Job[] }) {
         <div className="space-y-2">
           {selectedJobs ? (
             selectedJobs.length === 0 ? (
-              <p className="rounded-2xl border border-border bg-surface p-4 text-sm text-muted">
+              <p className="rounded-2xl bg-surface [box-shadow:var(--shadow-card)] p-4 text-sm text-muted">
                 No jobs on this day.
               </p>
             ) : (

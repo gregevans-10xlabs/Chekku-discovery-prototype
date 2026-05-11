@@ -107,7 +107,7 @@ export default function RctiPage({
 
       {/* Document */}
       <section className="mt-4 px-5">
-        <article className="rounded-2xl border border-border bg-surface p-5">
+        <article className="rounded-2xl bg-surface [box-shadow:var(--shadow-card)] p-5">
           <header className="border-b border-border pb-4">
             <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-strong">
               Recipient-Created Tax Invoice

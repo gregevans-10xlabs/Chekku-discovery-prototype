@@ -17,7 +17,7 @@ export default function OpportunityDetailLoading() {
       </section>
 
       <section className="mt-4 px-5">
-        <div className="rounded-2xl border border-border bg-surface p-4">
+        <div className="rounded-2xl bg-surface [box-shadow:var(--shadow-card)] p-4">
           <div className="h-3 w-20 rounded bg-surface-2" />
           <div className="mt-3 h-7 w-32 rounded bg-surface-2" />
           <div className="mt-2 h-3 w-40 rounded bg-surface-2/70" />
@@ -25,7 +25,7 @@ export default function OpportunityDetailLoading() {
       </section>
 
       <section className="mt-3 px-5">
-        <div className="rounded-2xl border border-border bg-surface p-4">
+        <div className="rounded-2xl bg-surface [box-shadow:var(--shadow-card)] p-4">
           <div className="h-3 w-20 rounded bg-surface-2" />
           <div className="mt-3 h-3 w-full rounded bg-surface-2/70" />
           <div className="mt-1.5 h-3 w-10/12 rounded bg-surface-2/70" />

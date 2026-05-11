@@ -87,7 +87,7 @@ export default function TrainingPage() {
 
 function CourseCard({ course }: { course: CourseRow }) {
   return (
-    <div className="flex items-center justify-between rounded-2xl border border-border bg-surface p-4">
+    <div className="flex items-center justify-between rounded-2xl bg-surface [box-shadow:var(--shadow-card)] p-4">
       <div className="min-w-0">
         <p className="text-[14px] font-semibold">{course.title}</p>
         <p className="mt-0.5 text-xs text-muted">{course.meta}</p>

@@ -208,7 +208,7 @@ function AllRctisInner() {
 
       {/* Filters */}
       <section className="px-5 pt-4">
-        <div className="rounded-2xl border border-border bg-surface p-3">
+        <div className="rounded-2xl bg-surface [box-shadow:var(--shadow-card)] p-3">
           <div className="flex items-center gap-2 pb-2">
             <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-strong">
               Period
@@ -275,7 +275,7 @@ function AllRctisInner() {
 
       {/* Aggregates for the filter */}
       <section className="mt-3 px-5">
-        <div className="rounded-2xl border border-border bg-surface p-4">
+        <div className="rounded-2xl bg-surface [box-shadow:var(--shadow-card)] p-4">
           <div className="flex items-start justify-between gap-3">
             <div className="min-w-0">
               <p className="text-[11px] font-semibold uppercase tracking-wider text-muted">
@@ -314,7 +314,7 @@ function AllRctisInner() {
       <section className="mt-3 px-5">
         <div className="space-y-2">
           {filtered.length === 0 ? (
-            <p className="rounded-2xl border border-border bg-surface p-4 text-sm text-muted">
+            <p className="rounded-2xl bg-surface [box-shadow:var(--shadow-card)] p-4 text-sm text-muted">
               No RCTIs match these filters.
             </p>
           ) : (
@@ -331,7 +331,7 @@ function RctiRow({ job }: { job: Job }) {
   return (
     <Link
       href={`/money/rcti/${job.id}`}
-      className="block rounded-2xl border border-border bg-surface p-4"
+      className="block rounded-2xl bg-surface [box-shadow:var(--shadow-card)] p-4"
     >
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">

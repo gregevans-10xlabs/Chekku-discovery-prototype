@@ -210,7 +210,7 @@ function FindJobsInner() {
           {history.map((o) => (
             <div
               key={o.id}
-              className="rounded-2xl border border-border bg-surface p-4"
+              className="rounded-2xl bg-surface [box-shadow:var(--shadow-card)] p-4"
             >
               <div className="flex items-center justify-between">
                 <div>
@@ -267,7 +267,7 @@ function OpportunityCard({
   return (
     <Link
       href={`/find-jobs/${id}`}
-      className="block rounded-2xl border border-border bg-surface p-5 [box-shadow:0_1px_2px_rgba(15,20,25,0.04)]"
+      className="block rounded-2xl bg-surface [box-shadow:var(--shadow-card)] p-5 [box-shadow:0_1px_2px_rgba(15,20,25,0.04)]"
     >
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">

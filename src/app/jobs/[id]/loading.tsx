@@ -20,7 +20,7 @@ export default function JobDetailLoading() {
 
       {/* Customer card */}
       <section className="mt-4 px-4">
-        <div className="rounded-2xl border border-border bg-surface p-4">
+        <div className="rounded-2xl bg-surface [box-shadow:var(--shadow-card)] p-4">
           <div className="h-3 w-16 rounded bg-surface-2" />
           <div className="mt-2 h-4 w-44 rounded bg-surface-2" />
           <div className="mt-2 h-3 w-32 rounded bg-surface-2/70" />
@@ -35,7 +35,7 @@ export default function JobDetailLoading() {
 
       {/* Scope card */}
       <section className="mt-3 px-4">
-        <div className="rounded-2xl border border-border bg-surface p-4">
+        <div className="rounded-2xl bg-surface [box-shadow:var(--shadow-card)] p-4">
           <div className="h-3 w-28 rounded bg-surface-2" />
           <div className="mt-3 h-3 w-full rounded bg-surface-2/70" />
           <div className="mt-1.5 h-3 w-11/12 rounded bg-surface-2/70" />
@@ -50,7 +50,7 @@ export default function JobDetailLoading() {
           {[0, 1, 2].map((i) => (
             <div
               key={i}
-              className="flex items-center gap-3 rounded-2xl border border-border bg-surface p-3"
+              className="flex items-center gap-3 rounded-2xl bg-surface [box-shadow:var(--shadow-card)] p-3"
             >
               <div className="h-9 w-9 shrink-0 rounded-full bg-surface-2" />
               <div className="flex-1 space-y-1.5">

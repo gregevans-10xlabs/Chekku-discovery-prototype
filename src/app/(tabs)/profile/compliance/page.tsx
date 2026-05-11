@@ -70,7 +70,7 @@ function ComplianceRow({ doc }: { doc: ComplianceDocument }) {
           ? "danger"
           : "neutral";
   return (
-    <div className="rounded-2xl border border-border bg-surface p-4">
+    <div className="rounded-2xl bg-surface [box-shadow:var(--shadow-card)] p-4">
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <p className="text-[14px] font-semibold">{doc.name}</p>

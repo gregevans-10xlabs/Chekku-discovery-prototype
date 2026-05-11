@@ -202,7 +202,7 @@ export default function JobDetail({
 
       {/* Customer */}
       <section className="mt-4 space-y-2 px-5">
-        <div className="rounded-2xl border border-border bg-surface p-4">
+        <div className="rounded-2xl bg-surface [box-shadow:var(--shadow-card)] p-4">
           <p className="text-[11px] font-semibold uppercase tracking-wider text-muted">
             Customer
           </p>
@@ -267,7 +267,7 @@ export default function JobDetail({
 
       {/* Scope */}
       <section className="mt-3 px-5">
-        <div className="rounded-2xl border border-border bg-surface p-4">
+        <div className="rounded-2xl bg-surface [box-shadow:var(--shadow-card)] p-4">
           <p className="text-[11px] font-semibold uppercase tracking-wider text-muted">
             Work Order {job.workOrder}
           </p>
@@ -353,7 +353,7 @@ export default function JobDetail({
         <section className="mt-3 px-5">
           <Link
             href={`/money/rcti/${job.id}`}
-            className="flex items-center justify-between rounded-2xl border border-border bg-surface p-4"
+            className="flex items-center justify-between rounded-2xl bg-surface [box-shadow:var(--shadow-card)] p-4"
           >
             <div className="min-w-0">
               <p className="text-[11px] font-semibold uppercase tracking-wider text-muted">
@@ -384,7 +384,7 @@ export default function JobDetail({
             {[...job.events].reverse().map((e, i) => (
               <li
                 key={i}
-                className="rounded-2xl border border-border bg-surface p-3"
+                className="rounded-2xl bg-surface [box-shadow:var(--shadow-card)] p-3"
               >
                 <div className="flex items-start justify-between gap-2">
                   <p className="text-[13px] font-semibold">

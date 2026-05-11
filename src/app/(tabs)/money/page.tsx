@@ -237,7 +237,7 @@ export default function MoneyPage() {
 
       {/* Payouts Overview chart */}
       <section className="mt-4 px-5">
-        <div className="rounded-2xl border border-border bg-surface p-4">
+        <div className="rounded-2xl bg-surface [box-shadow:var(--shadow-card)] p-4">
           <div className="flex items-baseline justify-between">
             <div>
               <p className="text-[11px] font-semibold uppercase tracking-wider text-muted">
@@ -339,7 +339,7 @@ export default function MoneyPage() {
             ))}
           </div>
         </div>
-        <div className="rounded-2xl border border-border bg-surface p-4">
+        <div className="rounded-2xl bg-surface [box-shadow:var(--shadow-card)] p-4">
           {clientBreakdown.rows.length === 0 ? (
             <p className="text-sm text-muted">
               No invoiced jobs in this period yet.
@@ -420,7 +420,7 @@ export default function MoneyPage() {
 
         <div className="mt-3 space-y-2">
           {filteredSettlements.length === 0 ? (
-            <p className="rounded-2xl border border-border bg-surface p-4 text-sm text-muted">
+            <p className="rounded-2xl bg-surface [box-shadow:var(--shadow-card)] p-4 text-sm text-muted">
               {settlementsTab === "action"
                 ? "Nothing needs your attention right now."
                 : settlementsTab === "settled"
@@ -454,7 +454,7 @@ export default function MoneyPage() {
         </h2>
         <Link
           href="/money/tax"
-          className="block rounded-2xl border border-border bg-surface p-4"
+          className="block rounded-2xl bg-surface [box-shadow:var(--shadow-card)] p-4"
         >
           <p className="text-[15px] font-semibold">
             {state.trade.gstRegistered ? "GST registered" : "Not GST registered"}
@@ -473,7 +473,7 @@ export default function MoneyPage() {
         </h2>
         <Link
           href="/money/bank"
-          className="block rounded-2xl border border-border bg-surface p-4"
+          className="block rounded-2xl bg-surface [box-shadow:var(--shadow-card)] p-4"
         >
           {bank ? (
             <>
@@ -510,7 +510,7 @@ export default function MoneyPage() {
         <h2 className="mb-2 text-xs font-semibold uppercase tracking-wider text-muted">
           Subscription &amp; payment
         </h2>
-        <div className="rounded-2xl border border-border bg-surface p-4">
+        <div className="rounded-2xl bg-surface [box-shadow:var(--shadow-card)] p-4">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-semibold">{sub.tier} tier</p>
@@ -584,7 +584,7 @@ function TaxCard({
   return (
     <Link
       href={href}
-      className="block rounded-2xl border border-border bg-surface p-3 hover:bg-surface-2"
+      className="block rounded-2xl bg-surface [box-shadow:var(--shadow-card)] p-3 hover:bg-surface-2"
     >
       <p className="text-[10px] font-semibold uppercase tracking-wider text-muted">
         {heading}
@@ -622,7 +622,7 @@ function MetricCard({
           ? "text-danger"
           : "text-foreground";
   return (
-    <div className="rounded-2xl border border-border bg-surface p-3">
+    <div className="rounded-2xl bg-surface [box-shadow:var(--shadow-card)] p-3">
       <p className="text-[10px] font-medium uppercase tracking-wider text-muted">
         <span className="mr-1">{icon}</span>
         {label}
@@ -691,7 +691,7 @@ function SettlementRow({
     : null;
 
   return (
-    <div className="rounded-2xl border border-border bg-surface">
+    <div className="rounded-2xl bg-surface [box-shadow:var(--shadow-card)]">
       <Link href={`/money/rcti/${job.id}`} className="block p-4">
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">

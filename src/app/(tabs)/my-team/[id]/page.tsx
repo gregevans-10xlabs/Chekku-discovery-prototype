@@ -94,7 +94,7 @@ export default function TeamMemberDetail({
 
       {/* Identity card */}
       <section className="px-5 pt-4">
-        <div className="rounded-2xl border border-border bg-surface p-4">
+        <div className="rounded-2xl bg-surface [box-shadow:var(--shadow-card)] p-4">
           <div className="flex items-center gap-3">
             <div className="flex h-12 w-12 items-center justify-center rounded-full bg-accent-soft text-lg font-bold text-accent">
               {member.name.charAt(0)}
@@ -135,7 +135,7 @@ export default function TeamMemberDetail({
           Assigned jobs <span className="text-muted-strong">({assigned.length})</span>
         </h2>
         {assigned.length === 0 ? (
-          <p className="rounded-2xl border border-border bg-surface p-4 text-sm text-muted">
+          <p className="rounded-2xl bg-surface [box-shadow:var(--shadow-card)] p-4 text-sm text-muted">
             No jobs assigned to {member.name.split(" ")[0]} yet. Delegate one
             from your roster below.
           </p>
@@ -161,7 +161,7 @@ export default function TeamMemberDetail({
       {/* Delegate */}
       <section className="mt-6 px-5">
         {pickerOpen ? (
-          <div className="rounded-2xl border border-border bg-surface p-4">
+          <div className="rounded-2xl bg-surface [box-shadow:var(--shadow-card)] p-4">
             <div className="mb-2 flex items-baseline justify-between">
               <h3 className="text-xs font-semibold uppercase tracking-wider text-muted">
                 Pick a job to delegate
@@ -288,7 +288,7 @@ function AssignedJobRow({
   const completed = job.status === "Completed";
 
   return (
-    <div className="rounded-2xl border border-border bg-surface">
+    <div className="rounded-2xl bg-surface [box-shadow:var(--shadow-card)]">
       <Link href={`/jobs/${job.id}`} className="block p-3">
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">

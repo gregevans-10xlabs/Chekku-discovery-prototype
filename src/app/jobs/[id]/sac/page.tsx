@@ -228,7 +228,7 @@ export default function SacPage({
             />
 
             {data.addTeam ? (
-              <div className="mt-3 space-y-3 rounded-2xl border border-border bg-surface p-3">
+              <div className="mt-3 space-y-3 rounded-2xl bg-surface [box-shadow:var(--shadow-card)] p-3">
                 {state.hasTeam && state.team.members.length > 0 ? (
                   <div>
                     <p className="text-[11px] font-semibold uppercase tracking-wider text-muted">
@@ -564,7 +564,7 @@ export default function SacPage({
           {/* On-site roster summary — surfaces what the signer is attesting */}
           {data.addTeam &&
           (data.teamMembersOnSite.length > 0 || data.crewNames.trim()) ? (
-            <div className="rounded-2xl border border-border bg-surface p-4">
+            <div className="rounded-2xl bg-surface [box-shadow:var(--shadow-card)] p-4">
               <p className="text-[11px] font-semibold uppercase tracking-wider text-muted">
                 On site for this job
               </p>

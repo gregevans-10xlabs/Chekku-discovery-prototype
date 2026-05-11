@@ -65,7 +65,7 @@ export default function ServiceAreaPage() {
       />
 
       <section className="flex-1 px-5 pt-4">
-        <div className="rounded-2xl border border-border bg-surface p-4">
+        <div className="rounded-2xl bg-surface [box-shadow:var(--shadow-card)] p-4">
           <p className="text-xs text-muted">
             Find Jobs only shows opportunities within this area. Wider radius
             = more jobs but longer drives.
@@ -86,7 +86,7 @@ export default function ServiceAreaPage() {
             className="mt-1 w-full rounded-2xl border border-border-strong bg-surface px-5 py-3.5 text-[15px] outline-none focus:border-accent"
           />
           {matches.length > 0 ? (
-            <div className="mt-2 overflow-hidden rounded-2xl border border-border bg-surface">
+            <div className="mt-2 overflow-hidden rounded-2xl bg-surface [box-shadow:var(--shadow-card)]">
               {matches.map((s) => (
                 <button
                   key={s.suburb}
@@ -125,7 +125,7 @@ export default function ServiceAreaPage() {
           </div>
         </div>
 
-        <div className="mt-5 rounded-2xl border border-border bg-surface p-5">
+        <div className="mt-5 rounded-2xl bg-surface [box-shadow:var(--shadow-card)] p-5">
           <div className="relative mx-auto flex h-32 w-full items-center justify-center">
             <div className="absolute inset-0 rounded-xl bg-surface-2/60" />
             <div

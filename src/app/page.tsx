@@ -88,7 +88,7 @@ function ValueCard({
   body: string;
 }) {
   return (
-    <div className="flex gap-3 rounded-2xl border border-border bg-surface p-4">
+    <div className="flex gap-3 rounded-2xl bg-surface [box-shadow:var(--shadow-card)] p-4">
       <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-accent-soft text-xl">
         {icon}
       </div>

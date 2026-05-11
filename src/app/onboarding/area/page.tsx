@@ -85,7 +85,7 @@ export default function AreaPage() {
             className="mt-1 w-full rounded-2xl border border-border-strong bg-surface px-4 py-3.5 text-lg outline-none focus:border-accent"
           />
           {matches.length > 0 ? (
-            <div className="mt-2 overflow-hidden rounded-2xl border border-border bg-surface">
+            <div className="mt-2 overflow-hidden rounded-2xl bg-surface [box-shadow:var(--shadow-card)]">
               {matches.map((s) => (
                 <button
                   key={s.suburb}
@@ -124,7 +124,7 @@ export default function AreaPage() {
           </div>
         </div>
 
-        <div className="mt-6 rounded-2xl border border-border bg-surface p-5">
+        <div className="mt-6 rounded-2xl bg-surface [box-shadow:var(--shadow-card)] p-5">
           <div className="relative mx-auto flex h-40 w-full items-center justify-center">
             <div className="absolute inset-0 rounded-xl bg-surface-2/60" />
             <div

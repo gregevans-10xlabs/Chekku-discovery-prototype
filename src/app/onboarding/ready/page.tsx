@@ -112,7 +112,7 @@ function SummaryRow({
   children: React.ReactNode;
 }) {
   return (
-    <div className="rounded-2xl border border-border bg-surface p-4">
+    <div className="rounded-2xl bg-surface [box-shadow:var(--shadow-card)] p-4">
       <p className="text-[11px] font-medium uppercase tracking-wider text-muted">
         {label}
       </p>

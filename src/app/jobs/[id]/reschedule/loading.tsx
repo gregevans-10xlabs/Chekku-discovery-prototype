@@ -14,7 +14,7 @@ export default function RescheduleLoading() {
       </div>
 
       <section className="mt-2 px-4">
-        <div className="rounded-2xl border border-border bg-surface p-4">
+        <div className="rounded-2xl bg-surface [box-shadow:var(--shadow-card)] p-4">
           <div className="h-3 w-24 rounded bg-surface-2" />
           <div className="mt-2 h-4 w-40 rounded bg-surface-2" />
           <div className="mt-2 h-3 w-full rounded bg-surface-2/70" />
@@ -23,7 +23,7 @@ export default function RescheduleLoading() {
       </section>
 
       <section className="mt-4 px-4">
-        <div className="h-64 rounded-2xl border border-border bg-surface" />
+        <div className="h-64 rounded-2xl bg-surface [box-shadow:var(--shadow-card)]" />
       </section>
 
       <section className="mt-4 px-4">

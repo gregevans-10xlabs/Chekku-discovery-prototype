@@ -92,7 +92,7 @@ export default function ProfileHub() {
 
       {/* Identity card — compact */}
       <section className="px-5 pt-4">
-        <div className="rounded-2xl border border-border bg-surface p-4">
+        <div className="rounded-2xl bg-surface [box-shadow:var(--shadow-card)] p-4">
           <div className="flex items-center gap-3">
             <div className="flex h-14 w-14 items-center justify-center rounded-full bg-accent-soft text-xl font-bold text-accent">
               {state.trade.firstName.charAt(0)}
@@ -155,7 +155,7 @@ export default function ProfileHub() {
 
       {/* Hub tiles */}
       <section className="mt-3 px-5">
-        <div className="overflow-hidden rounded-2xl border border-border bg-surface">
+        <div className="overflow-hidden rounded-2xl bg-surface [box-shadow:var(--shadow-card)]">
           <HubRow
             href="/profile/compliance"
             label="Compliance"

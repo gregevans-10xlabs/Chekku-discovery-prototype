@@ -61,7 +61,7 @@ export default function PaymentMethodPage() {
       />
 
       <section className="flex-1 px-5 pt-4">
-        <div className="rounded-2xl border border-border bg-surface p-4">
+        <div className="rounded-2xl bg-surface [box-shadow:var(--shadow-card)] p-4">
           <p className="text-xs text-muted">
             Used to charge your Circl subscription when you exceed the free
             allocation. Settlements still land in your bank account.
