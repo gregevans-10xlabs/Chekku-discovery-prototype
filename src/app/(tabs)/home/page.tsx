@@ -852,16 +852,25 @@ function HomeNotificationPill() {
 
     // Today job with a compliance gap on its complianceRequired list —
     // primary jeopardy hook. Surfaces CG36110's SWMS gap as the demo's
-    // central beat.
+    // central beat. The gap is trade-level (Brett's SWMS expired) so
+    // the fix path is the document library, not the job page itself.
     ownTodayJobs.forEach((j) => {
       const gap = j.complianceRequired.find((c) => !c.verified);
       if (gap) {
+        const isSwms = gap.name.toLowerCase().includes("swms") ||
+          gap.name.toLowerCase().includes("safe work");
+        // SWMS gap → specific Starlink template (matches CG36110's job
+        // type). Other compliance gaps → general library where the
+        // trade can browse for the right fix.
+        const href = isSwms
+          ? "/profile/library/swms-starlink-roof"
+          : "/profile/library";
         out.push({
           id: `compliance-gap-${j.id}`,
           icon: "⚠",
-          title: `${gap.name} gap on today's ${j.customer.suburb} job`,
-          href: `/jobs/${j.id}`,
-          cta: "Fix it",
+          title: `${gap.name} needed for today's ${j.customer.suburb} job`,
+          href,
+          cta: isSwms ? "Get template" : "Fix in library",
         });
       }
     });

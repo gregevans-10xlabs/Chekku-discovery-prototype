@@ -277,6 +277,66 @@ export default function JobDetail({
         </div>
       </section>
 
+      {/* Compliance for this job — shows what's required vs what's
+          verified, with a fix-path link when something's missing.
+          Crucially, this is where a trade who tapped a flagged row in
+          My Day lands and finds something actionable. */}
+      {job.complianceRequired.length > 0 && !jobDone ? (
+        <section className="mt-3 px-5">
+          <div className="rounded-2xl bg-surface [box-shadow:var(--shadow-card)] p-4">
+            <p className="text-[11px] font-semibold uppercase tracking-wider text-muted">
+              Compliance for this job
+            </p>
+            <ul className="mt-2 space-y-1.5">
+              {job.complianceRequired.map((c) => (
+                <li
+                  key={c.name}
+                  className="flex items-center justify-between gap-3 text-[13px]"
+                >
+                  <span className="flex items-center gap-2">
+                    <span
+                      className={
+                        c.verified ? "text-success" : "text-warn"
+                      }
+                      aria-hidden
+                    >
+                      {c.verified ? "✓" : "⚠"}
+                    </span>
+                    <span>{c.name}</span>
+                  </span>
+                  <span
+                    className={
+                      "text-[11px] font-semibold uppercase tracking-[0.06em] " +
+                      (c.verified ? "text-success" : "text-warn")
+                    }
+                  >
+                    {c.verified ? "Verified" : "Missing"}
+                  </span>
+                </li>
+              ))}
+            </ul>
+            {job.complianceRequired.some((c) => !c.verified) ? (
+              <Link
+                href={
+                  job.complianceRequired.some(
+                    (c) =>
+                      !c.verified &&
+                      (c.name.toLowerCase().includes("swms") ||
+                        c.name.toLowerCase().includes("safe work")),
+                  )
+                    ? "/profile/library/swms-starlink-roof"
+                    : "/profile/library"
+                }
+                className="mt-3 flex w-full items-center justify-center rounded-lg bg-warn px-3.5 py-2.5 text-[13px] font-semibold text-white"
+                style={{ minHeight: 44 }}
+              >
+                Fix in document library
+              </Link>
+            ) : null}
+          </div>
+        </section>
+      ) : null}
+
       {/* Job workflow */}
       <section className="mt-5 px-5">
         <h2 className="mb-2 text-xs font-semibold uppercase tracking-wider text-muted">
