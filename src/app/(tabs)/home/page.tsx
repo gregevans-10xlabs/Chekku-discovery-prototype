@@ -444,8 +444,9 @@ function DuringCards({
               {activeJob.customer.firstName} · {activeJob.customer.suburb}
             </p>
           </div>
-          <span className="shrink-0 text-[13px] font-semibold text-accent-strong">
-            Continue →
+          {/* Phase 7 change 3: filled button instead of text arrow */}
+          <span className="shrink-0 rounded-lg bg-accent px-3.5 py-2 text-[13px] font-semibold text-white">
+            Continue
           </span>
         </div>
       </button>
@@ -534,8 +535,9 @@ function EveningCards({
               Confirm attendance and check equipment
             </p>
           </div>
-          <span className="shrink-0 text-[13px] font-semibold text-accent-strong">
-            Open →
+          {/* Phase 7 change 3: filled button instead of text arrow */}
+          <span className="shrink-0 rounded-lg bg-accent px-3.5 py-2 text-[13px] font-semibold text-white">
+            Plan
           </span>
         </div>
       </button>

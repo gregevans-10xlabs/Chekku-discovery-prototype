@@ -103,8 +103,9 @@ function FindJobsInner() {
                   Existing accepted jobs continue as normal.
                 </p>
               </div>
-              <span className="text-[12px] font-semibold text-warn">
-                Resume →
+              {/* Phase 7 change 3: filled button instead of text arrow */}
+              <span className="shrink-0 rounded-lg bg-warn px-3.5 py-2 text-[13px] font-semibold text-white">
+                Resume
               </span>
             </div>
           </Link>
