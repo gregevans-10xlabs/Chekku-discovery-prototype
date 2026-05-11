@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { Suspense, useMemo, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { useAppState } from "@/lib/state/AppStateProvider";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { Badge } from "@/components/ui/Badge";
@@ -20,8 +21,23 @@ interface ScheduleSection {
 }
 
 export default function SchedulePage() {
+  return (
+    <Suspense fallback={null}>
+      <ScheduleInner />
+    </Suspense>
+  );
+}
+
+function ScheduleInner() {
   const { state } = useAppState();
-  const [view, setView] = useState<"list" | "calendar">("list");
+  const searchParams = useSearchParams();
+  // Phase 8d: support deep-linking from Home's "Open today in Schedule"
+  // and similar contextual links. ?view=calendar opens calendar mode;
+  // ?today=1 pre-selects today's date in calendar mode.
+  const initialView =
+    searchParams.get("view") === "calendar" ? "calendar" : "list";
+  const initialSelectToday = searchParams.get("today") === "1";
+  const [view, setView] = useState<"list" | "calendar">(initialView);
 
   // When the team is active, Schedule shows only the trade's own work — work
   // delegated to team members lives in My Team.
@@ -61,9 +77,51 @@ export default function SchedulePage() {
     ];
   }, [jobs]);
 
+  // Phase 8c: callout for tomorrow's unresolved equipment — directly
+  // explains the warn dot on the Schedule nav badge.
+  const jeopardyJob = useMemo(
+    () =>
+      jobs.find(
+        (j) =>
+          j.dateOffsetDays === 1 &&
+          (j.equipmentDeliveryStatus === "Not Yet Received" ||
+            j.equipmentDeliveryStatus === "Delayed"),
+      ),
+    [jobs],
+  );
+
   return (
     <main className="pb-6">
       <PageHeader title="Schedule" subtitle={`${jobs.length} accepted jobs`} />
+
+      {jeopardyJob ? (
+        <section className="px-5 pt-3">
+          <Link
+            href={`/jobs/${jeopardyJob.id}`}
+            className="flex items-center gap-3 rounded-2xl border border-warn/40 bg-warn-soft px-4 py-3"
+            style={{ minHeight: 44 }}
+          >
+            <span className="text-[18px]" aria-hidden>
+              ⚠
+            </span>
+            <div className="min-w-0 flex-1">
+              <p className="text-[14px] font-semibold text-warn">
+                Tomorrow&apos;s equipment is{" "}
+                {jeopardyJob.equipmentDeliveryStatus === "Delayed"
+                  ? "delayed"
+                  : "not yet received"}
+              </p>
+              <p className="mt-0.5 truncate text-[12px] text-foreground/85">
+                {jeopardyJob.type} · {jeopardyJob.startTime} ·{" "}
+                {jeopardyJob.customer.suburb}
+              </p>
+            </div>
+            <span className="shrink-0 rounded-lg bg-warn px-3.5 py-2 text-[13px] font-semibold text-white">
+              Open job
+            </span>
+          </Link>
+        </section>
+      ) : null}
 
       <div className="sticky top-[60px] z-10 bg-background/95 px-5 pt-2 backdrop-blur">
         <div className="flex rounded-xl bg-surface p-1">
@@ -105,7 +163,7 @@ export default function SchedulePage() {
           )}
         </div>
       ) : (
-        <CalendarView jobs={jobs} />
+        <CalendarView jobs={jobs} preSelectToday={initialSelectToday} />
       )}
     </main>
   );
@@ -198,12 +256,23 @@ function JobListRow({ job }: { job: Job }) {
   );
 }
 
-function CalendarView({ jobs }: { jobs: Job[] }) {
+function CalendarView({
+  jobs,
+  preSelectToday = false,
+}: {
+  jobs: Job[];
+  preSelectToday?: boolean;
+}) {
   // Stable per-mount — avoids re-bucketing the calendar on every render.
   const today = useMemo(() => new Date(), []);
   const todayKey = dateKey(today);
   const [monthOffset, setMonthOffset] = useState(0);
-  const [selectedKey, setSelectedKey] = useState<string | null>(null);
+  // Phase 8d: pre-select today when arriving via the My Day "Open
+  // today" CTA so the trade lands on today's job list immediately,
+  // not on a blank calendar.
+  const [selectedKey, setSelectedKey] = useState<string | null>(
+    preSelectToday ? todayKey : null,
+  );
 
   const month = useMemo(
     () => new Date(today.getFullYear(), today.getMonth() + monthOffset, 1),

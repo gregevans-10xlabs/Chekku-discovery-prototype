@@ -87,6 +87,11 @@ export default function MyTeamPage() {
         subtitle={`${team.members.length} member${team.members.length === 1 ? "" : "s"}`}
       />
 
+      {/* Phase 8c: callout for the delegated job with equipment
+          unresolved — directly maps the warn dot on the My Team nav
+          badge to the affected member + job. */}
+      <TeamJeopardyCallout />
+
       {/* Team-wide aggregate */}
       <section className="px-5 pt-4">
         <div className="rounded-2xl bg-surface [box-shadow:var(--shadow-card)] p-4">
@@ -272,5 +277,43 @@ export default function MyTeamPage() {
         </p>
       </section>
     </main>
+  );
+}
+
+function TeamJeopardyCallout() {
+  const { state } = useAppState();
+  const job = state.jobs.find(
+    (j) =>
+      j.assignedToMemberId &&
+      (j.equipmentDeliveryStatus === "Not Yet Received" ||
+        j.equipmentDeliveryStatus === "Delayed"),
+  );
+  if (!job) return null;
+  const member = state.team.members.find((m) => m.id === job.assignedToMemberId);
+  const memberFirst = member?.name.split(" ")[0] ?? "Team member";
+  return (
+    <section className="px-5 pt-3">
+      <Link
+        href={`/jobs/${job.id}`}
+        className="flex items-center gap-3 rounded-2xl border border-warn/40 bg-warn-soft px-4 py-3"
+        style={{ minHeight: 44 }}
+      >
+        <span className="text-[18px]" aria-hidden>
+          ⚠
+        </span>
+        <div className="min-w-0 flex-1">
+          <p className="text-[14px] font-semibold text-warn">
+            {memberFirst}&apos;s equipment is{" "}
+            {job.equipmentDeliveryStatus === "Delayed" ? "delayed" : "not yet received"}
+          </p>
+          <p className="mt-0.5 truncate text-[12px] text-foreground/85">
+            {job.type} · {job.startTime} · {job.customer.suburb}
+          </p>
+        </div>
+        <span className="shrink-0 rounded-lg bg-warn px-3.5 py-2 text-[13px] font-semibold text-white">
+          Open job
+        </span>
+      </Link>
+    </section>
   );
 }

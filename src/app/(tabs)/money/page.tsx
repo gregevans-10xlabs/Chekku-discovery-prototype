@@ -207,9 +207,62 @@ export default function MoneyPage() {
   const card = state.trade.paymentMethod;
   const team = state.team;
 
+  // Phase 8c: when arriving from a badged Money nav tab, surface a
+  // callout at the top showing exactly which RCTI needs action — so
+  // the trade doesn't have to hunt through the settlements list.
+  const actionJobs = useMemo(
+    () => state.jobs.filter((j) => j.paymentStatus === "Action Required"),
+    [state.jobs],
+  );
+
   return (
     <main className="pb-8">
       <PageHeader title="Money" />
+
+      {/* Action Required callout — directly maps to the count badge on
+          the Money nav tab. Tells the trade exactly what triggered the
+          badge and links straight to it. */}
+      {actionJobs.length > 0 ? (
+        <section className="px-5 pt-3">
+          {actionJobs.length === 1 ? (
+            <Link
+              href={
+                state.trade.bankAccount
+                  ? `/money/rcti/${actionJobs[0].id}`
+                  : "/money/bank"
+              }
+              className="flex items-center gap-3 rounded-2xl border border-warn/40 bg-warn-soft px-4 py-3"
+              style={{ minHeight: 44 }}
+            >
+              <span className="text-[18px]" aria-hidden>
+                💸
+              </span>
+              <div className="min-w-0 flex-1">
+                <p className="text-[14px] font-semibold text-warn">
+                  RCTI needs your attention
+                </p>
+                <p className="mt-0.5 truncate text-[12px] text-foreground/85">
+                  {actionJobs[0].rctiNumber ?? actionJobs[0].cgNumber} ·{" "}
+                  {actionJobs[0].type} · {actionJobs[0].customer.firstName}{" "}
+                  {actionJobs[0].customer.lastName}
+                </p>
+              </div>
+              <span className="shrink-0 rounded-lg bg-warn px-3.5 py-2 text-[13px] font-semibold text-white">
+                {state.trade.bankAccount ? "Open" : "Add bank"}
+              </span>
+            </Link>
+          ) : (
+            <div className="rounded-2xl border border-warn/40 bg-warn-soft px-4 py-3">
+              <p className="text-[14px] font-semibold text-warn">
+                ⚠ {actionJobs.length} RCTIs need your attention
+              </p>
+              <p className="mt-1 text-[12px] text-foreground/85">
+                Listed below in the Action filter — tap to resolve each.
+              </p>
+            </div>
+          )}
+        </section>
+      ) : null}
 
       {/* Top metric strip */}
       <section className="px-5 pt-4">

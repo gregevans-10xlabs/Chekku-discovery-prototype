@@ -375,10 +375,8 @@ function MorningCards({
   router: ReturnType<typeof useRouter>;
 }) {
   const pending = jobs.filter((j) => j.attendance === "Pending");
-  const next = jobs.find(
-    (j) => j.status === "Confirmed" && j.attendance === "Confirmed",
-  );
 
+  // Attendance prompts come first — non-skippable per spec
   if (pending.length > 0) {
     return (
       <>
@@ -407,7 +405,9 @@ function MorningCards({
     );
   }
 
-  if (next) return <NextJobCard job={next} router={router} />;
+  // Otherwise the My Day overview — gives the trade a glance at the
+  // whole day's work, not just the next job
+  if (jobs.length > 0) return <MyDayCard jobs={jobs} router={router} />;
   return null;
 }
 
@@ -613,48 +613,106 @@ function TomorrowCards({
 // possible. Only attendance cards and the SWMS-warning case need
 // bespoke treatment because they have multiple actions / states.
 
-function NextJobCard({
-  job,
+// MyDayCard — Phase 8b. Replaces the single-job NextJobCard with a
+// compact overview of today's work. The trade sees what's coming, can
+// tap any row to dive into the job, and has a clear "Open today" CTA
+// that routes to Schedule for the full calendar/list view.
+function MyDayCard({
+  jobs,
   router,
 }: {
-  job: Job;
+  jobs: Job[];
   router: ReturnType<typeof useRouter>;
 }) {
-  const swmsGap = job.complianceRequired.some(
-    (c) => !c.verified && c.name.toLowerCase().includes("swms"),
+  const totalValue = jobs.reduce((s, j) => s + j.value, 0);
+
+  return (
+    <div className="rounded-2xl bg-surface p-4 [box-shadow:var(--shadow-card)]">
+      <div className="flex items-baseline justify-between">
+        <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-muted">
+          My day
+        </p>
+        <p className="text-[12px] text-muted-strong">
+          {jobs.length} {jobs.length === 1 ? "job" : "jobs"} · ${totalValue.toFixed(0)}
+        </p>
+      </div>
+
+      <div className="mt-3 space-y-1">
+        {jobs.map((j) => (
+          <MyDayRow
+            key={j.id}
+            job={j}
+            onOpen={() => router.push(`/jobs/${j.id}`)}
+          />
+        ))}
+      </div>
+
+      <button
+        type="button"
+        onClick={() => router.push("/schedule?view=calendar&today=1")}
+        className="mt-3 flex w-full items-center justify-center rounded-lg bg-accent px-3.5 py-2.5 text-[13px] font-semibold text-white"
+        style={{ minHeight: 44 }}
+      >
+        Open today in Schedule
+      </button>
+    </div>
   );
+}
+
+function MyDayRow({
+  job,
+  onOpen,
+}: {
+  job: Job;
+  onOpen: () => void;
+}) {
+  // Status icon — plain language signal of where this job is at
+  let statusIcon: string;
+  let statusColor: string;
+  const hasComplianceGap = job.complianceRequired.some((c) => !c.verified);
+  if (job.status === "Completed") {
+    statusIcon = "✓✓";
+    statusColor = "text-success";
+  } else if (job.status === "InProgress") {
+    statusIcon = "🔧";
+    statusColor = "";
+  } else if (job.attendance === "Unable") {
+    statusIcon = "✗";
+    statusColor = "text-danger";
+  } else if (job.attendance === "Pending") {
+    statusIcon = "⏳";
+    statusColor = "text-warn";
+  } else if (hasComplianceGap) {
+    statusIcon = "⚠";
+    statusColor = "text-warn";
+  } else {
+    statusIcon = "✓";
+    statusColor = "text-success";
+  }
+
   return (
     <button
       type="button"
-      onClick={() => router.push(`/jobs/${job.id}`)}
-      className="block w-full rounded-2xl bg-surface p-4 text-left [box-shadow:var(--shadow-card)]"
+      onClick={onOpen}
+      className="flex w-full items-center gap-3 rounded-xl px-2 py-2 text-left hover:bg-surface-2"
       style={{ minHeight: 44 }}
     >
-      <div className="flex items-center gap-4">
-        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-accent-soft text-accent-strong text-[18px]">
-          📍
-        </div>
-        <div className="min-w-0 flex-1">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-muted">
-            Your next job
-          </p>
-          <p className="mt-1 text-[15px] font-semibold leading-tight">
-            {job.type} · {job.startTime.toLowerCase()}
-          </p>
-          <p className="mt-0.5 truncate text-[13px] text-muted">
-            {job.customer.firstName} · {job.customer.suburb}
-          </p>
-        </div>
-        {/* Phase 7 change 3: primary CTA is a filled pill, not a text arrow */}
-        <span className="shrink-0 rounded-lg bg-accent px-3.5 py-2 text-[13px] font-semibold text-white">
-          Open job
-        </span>
-      </div>
-      {swmsGap ? (
-        <p className="mt-3 border-t border-warn/30 pt-3 text-[12px] font-semibold text-warn">
-          ⚠ SWMS gap — upload before site arrival
-        </p>
-      ) : null}
+      <span
+        className={`shrink-0 text-[15px] font-bold leading-none ${statusColor}`}
+        aria-hidden
+      >
+        {statusIcon}
+      </span>
+      <span className="shrink-0 text-[13px] font-semibold tabular-nums text-foreground">
+        {job.startTime.toLowerCase()}
+      </span>
+      <span className="min-w-0 flex-1 truncate text-[13px] text-muted">
+        {job.type.replace(" Installation", "")} · {job.customer.firstName}{" "}
+        · {job.customer.suburb}
+      </span>
+      <span className="shrink-0 text-[12px] text-muted-strong" aria-hidden>
+        ›
+      </span>
     </button>
   );
 }
@@ -751,10 +809,15 @@ function AttendanceCard({
 }
 
 // ─────────────────────────────────────────────────────────────────────
-// HomeNotificationPill — Phase 7 changes 1, 4. Cross-tab notifications
-// (urgent opportunity, RCTI Action Required, jeopardy on delegated
-// jobs) now surface as nav badges; this pill carries only HOME-specific
-// items (recent wins, things the trade can resolve from Home itself).
+// HomeNotificationPill — Phase 7 changes 1, 4 (expanded Phase 8a).
+// Cross-tab notifications (urgent opportunity, RCTI Action Required,
+// jeopardy on delegated jobs) surface as nav badges; this pill carries
+// HOME-specific items: things tied to today's flow that the trade can
+// resolve from Home itself. Includes:
+// - Compliance gap on a today job (most jeopardy-worthy item Brett
+//   sees on his own jobs — currently the SWMS gap on CG36110)
+// - Attendance still pending on today's jobs
+// - Recent wins (celebration; fleeting)
 // At rest with one item: full pill with inline action. With multiple
 // items: collapsed pill showing count, expandable.
 
@@ -776,8 +839,44 @@ function HomeNotificationPill() {
       cta: string;
     }> = [];
 
-    // Recent wins surface here as a celebration touch (kept on Home
-    // because the trade just acted to win this; immediate feedback).
+    const ownTodayJobs = state.jobs.filter(
+      (j) =>
+        j.dateOffsetDays === 0 &&
+        j.status !== "Completed" &&
+        (!state.hasTeam || !j.assignedToMemberId),
+    );
+
+    // Today job with a compliance gap on its complianceRequired list —
+    // primary jeopardy hook. Surfaces CG36110's SWMS gap as the demo's
+    // central beat.
+    ownTodayJobs.forEach((j) => {
+      const gap = j.complianceRequired.find((c) => !c.verified);
+      if (gap) {
+        out.push({
+          id: `compliance-gap-${j.id}`,
+          icon: "⚠",
+          title: `${gap.name} gap on today's ${j.customer.suburb} job`,
+          href: `/jobs/${j.id}`,
+          cta: "Fix it",
+        });
+      }
+    });
+
+    // Attendance still pending on a today job
+    ownTodayJobs
+      .filter((j) => j.attendance === "Pending")
+      .forEach((j) => {
+        out.push({
+          id: `attendance-${j.id}`,
+          icon: "⏳",
+          title: `Confirm attendance for ${j.startTime.toLowerCase()} ${j.type}`,
+          href: `/jobs/${j.id}`,
+          cta: "Confirm",
+        });
+      });
+
+    // Recent wins — celebration touch (fleeting, tied to a recent
+    // accept-to-selected transition)
     const RECENT_WIN_MS = 5 * 60_000;
     state.jobs
       .filter(
@@ -794,7 +893,7 @@ function HomeNotificationPill() {
       });
 
     return out;
-  }, [state.jobs, nowMs]);
+  }, [state.jobs, state.hasTeam, nowMs]);
 
   if (items.length === 0) return null;
 

@@ -48,6 +48,13 @@ function FindJobsInner() {
     [state.opportunities],
   );
 
+  // Phase 8c: callout for the urgent opportunity that triggered the
+  // Find Jobs nav badge — directly maps the badge to the relevant card.
+  const urgentOpp = useMemo(
+    () => available.find((o) => o.urgent),
+    [available],
+  );
+
   const sections = useMemo(() => {
     const sorter = (a: Opportunity, b: Opportunity) => {
       if (sort === "distance") return a.distanceKm - b.distanceKm;
@@ -80,6 +87,32 @@ function FindJobsInner() {
             : `${available.length} jobs in your area · matched to your trade & compliance`
         }
       />
+
+      {!isPaused && urgentOpp ? (
+        <section className="px-5 pt-3">
+          <Link
+            href={`/find-jobs/${urgentOpp.id}`}
+            className="flex items-center gap-3 rounded-2xl border border-accent/40 bg-accent-soft px-4 py-3"
+            style={{ minHeight: 44 }}
+          >
+            <span className="text-[18px]" aria-hidden>
+              ⚡
+            </span>
+            <div className="min-w-0 flex-1">
+              <p className="text-[14px] font-semibold text-accent-strong">
+                Urgent job available
+              </p>
+              <p className="mt-0.5 truncate text-[12px] text-foreground/85">
+                {urgentOpp.type} · {urgentOpp.suburb} ·{" "}
+                {urgentOpp.distanceKm.toFixed(1)} km · ${urgentOpp.value.toFixed(0)}
+              </p>
+            </div>
+            <span className="shrink-0 rounded-lg bg-accent px-3.5 py-2 text-[13px] font-semibold text-white">
+              View
+            </span>
+          </Link>
+        </section>
+      ) : null}
 
       {isPaused ? (
         <section className="px-5 pt-3">
